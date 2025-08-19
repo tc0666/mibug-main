@@ -45,6 +45,8 @@
     "start": "cross-env NODE_ENV=production node server.js",
     "start:dev": "vite",
     "build": "vite build",
+    "vercel-build": "npm run build",
+    "railway:build": "npm run build",
     "preview": "vite preview --port 5000",
     "setup-db": "node scripts/setup-database.js",
     "populate-demo": "node scripts/populate-demo-data.js",
@@ -100,5 +102,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   }
 }
