@@ -152,6 +152,14 @@ export default function AdminApp() {
   const [activeSection, setActiveSection] = useState('leads-all');
   const [showNewLeadModal, setShowNewLeadModal] = useState(false);
 
+  // Notification management
+  const [notifications, setNotifications] = useState({
+    activities: 5,
+    analytics: 0,
+    finance: 0,
+    settings: 0
+  });
+
   // Calculate dynamic lead counts
   const leadCounts = useMemo(() => {
     const total = leads.length;
@@ -408,6 +416,31 @@ export default function AdminApp() {
     }
   };
 
+  // Notification management functions
+  const clearNotifications = (section?: string) => {
+    if (section) {
+      setNotifications(prev => ({ ...prev, [section]: 0 }));
+    } else {
+      // Clear all notifications
+      setNotifications({
+        activities: 0,
+        analytics: 0,
+        finance: 0,
+        settings: 0
+      });
+    }
+  };
+
+  const clearAllNotifications = () => clearNotifications();
+
+  // Function to add notifications (for testing/demo purposes)
+  const addNotification = (section: keyof typeof notifications, count: number = 1) => {
+    setNotifications(prev => ({
+      ...prev,
+      [section]: prev[section] + count
+    }));
+  };
+
   const handleLogin = (newSessionId: string) => {
     setSessionId(newSessionId);
   };
@@ -540,6 +573,9 @@ export default function AdminApp() {
         activeSection={activeSection}
         onSectionChange={setActiveSection}
         leadCounts={leadCounts}
+        notifications={notifications}
+        onClearNotifications={clearNotifications}
+        onClearAllNotifications={clearAllNotifications}
       />
 
       {/* Main Content Area */}

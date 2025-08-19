@@ -10,7 +10,11 @@ import {
   Divider,
   Collapse,
   Badge,
-  Chip
+  Chip,
+  IconButton,
+  Tooltip,
+  Menu,
+  MenuItem
 } from '@mui/material';
 import siteLogo from '../../../icons/logo.svg';
 import {
@@ -34,7 +38,9 @@ import {
   Receipt as ReceiptIcon,
   Security as SecurityIcon,
   Notifications as NotificationsIcon,
-  Help as HelpIcon
+  Help as HelpIcon,
+  Clear as ClearIcon,
+  ClearAll as ClearAllIcon
 } from '@mui/icons-material';
 
 interface SidebarProps {
@@ -46,6 +52,14 @@ interface SidebarProps {
     qualified: number;
     followUp: number;
   };
+  notifications?: {
+    activities: number;
+    analytics: number;
+    finance: number;
+    settings: number;
+  };
+  onClearNotifications?: (section?: string) => void;
+  onClearAllNotifications?: () => void;
 }
 
 const menuItems = [
@@ -100,26 +114,36 @@ const menuItems = [
   }
 ];
 
-const bottomMenuItems = [
-  {
-    id: 'settings',
-    label: 'Einstellungen',
-    icon: SettingsIcon,
-    subItems: [
-      { id: 'settings-general', label: 'Allgemein', icon: SettingsIcon },
-      { id: 'settings-security', label: 'Sicherheit', icon: SecurityIcon },
-      { id: 'settings-notifications', label: 'Benachrichtigungen', icon: NotificationsIcon }
-    ]
-  },
-  {
-    id: 'help',
-    label: 'Hilfe & Support',
-    icon: HelpIcon
-  }
-];
+  // Dynamic bottom menu items
+  const dynamicBottomMenuItems = [
+    {
+      id: 'settings',
+      label: 'Einstellungen',
+      icon: SettingsIcon,
+      badge: notifications?.settings || 0,
+      subItems: [
+        { id: 'settings-general', label: 'Allgemein', icon: SettingsIcon },
+        { id: 'settings-security', label: 'Sicherheit', icon: SecurityIcon },
+        { id: 'settings-notifications', label: 'Benachrichtigungen', icon: NotificationsIcon }
+      ]
+    },
+    {
+      id: 'help',
+      label: 'Hilfe & Support',
+      icon: HelpIcon
+    }
+  ];
 
-export default function Sidebar({ activeSection, onSectionChange, leadCounts }: SidebarProps) {
+export default function Sidebar({
+  activeSection,
+  onSectionChange,
+  leadCounts,
+  notifications,
+  onClearNotifications,
+  onClearAllNotifications
+}: SidebarProps) {
   const [expandedItems, setExpandedItems] = useState<string[]>(['leads']);
+  const [notificationMenuAnchor, setNotificationMenuAnchor] = useState<null | HTMLElement>(null);
 
   // Dynamic menu items with real lead counts
   const dynamicMenuItems = [
@@ -145,7 +169,7 @@ export default function Sidebar({ activeSection, onSectionChange, leadCounts }: 
       id: 'activities',
       label: 'Aktivitäten',
       icon: AssignmentIcon,
-      badge: 5, // TODO: Make this dynamic
+      badge: notifications?.activities || 0,
       subItems: [
         { id: 'activities-calls', label: 'Anrufe', icon: PhoneIcon },
         { id: 'activities-emails', label: 'E-Mails', icon: EmailIcon },
@@ -156,6 +180,7 @@ export default function Sidebar({ activeSection, onSectionChange, leadCounts }: 
       id: 'analytics',
       label: 'Analytics',
       icon: AnalyticsIcon,
+      badge: notifications?.analytics || 0,
       subItems: [
         { id: 'analytics-overview', label: 'Übersicht', icon: TrendingUpIcon },
         { id: 'analytics-reports', label: 'Berichte', icon: AssessmentIcon },
@@ -166,6 +191,7 @@ export default function Sidebar({ activeSection, onSectionChange, leadCounts }: 
       id: 'finance',
       label: 'Finanzen',
       icon: AccountBalanceIcon,
+      badge: notifications?.finance || 0,
       subItems: [
         { id: 'finance-credits', label: 'Kredite', icon: CreditCardIcon },
         { id: 'finance-payments', label: 'Zahlungen', icon: ReceiptIcon },
@@ -176,15 +202,46 @@ export default function Sidebar({ activeSection, onSectionChange, leadCounts }: 
 
   const handleItemClick = (itemId: string, hasSubItems: boolean = false) => {
     if (hasSubItems) {
-      setExpandedItems(prev => 
-        prev.includes(itemId) 
+      setExpandedItems(prev =>
+        prev.includes(itemId)
           ? prev.filter(id => id !== itemId)
           : [...prev, itemId]
       );
     } else {
       onSectionChange(itemId);
+      // Clear notifications for the section when visited
+      if (onClearNotifications && notifications && notifications[itemId as keyof typeof notifications] > 0) {
+        onClearNotifications(itemId);
+      }
     }
   };
+
+  const handleNotificationMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setNotificationMenuAnchor(event.currentTarget);
+  };
+
+  const handleNotificationMenuClose = () => {
+    setNotificationMenuAnchor(null);
+  };
+
+  const handleClearSpecificNotification = (section: string) => {
+    if (onClearNotifications) {
+      onClearNotifications(section);
+    }
+    handleNotificationMenuClose();
+  };
+
+  const handleClearAllNotifications = () => {
+    if (onClearAllNotifications) {
+      onClearAllNotifications();
+    }
+    handleNotificationMenuClose();
+  };
+
+  // Calculate total notifications
+  const totalNotifications = notifications ?
+    Object.values(notifications).reduce((sum, count) => sum + count, 0) +
+    (leadCounts?.new || 0) + (leadCounts?.qualified || 0) + (leadCounts?.followUp || 0) : 0;
 
   const renderMenuItem = (item: any, isSubItem: boolean = false) => {
     const isActive = activeSection === item.id;
@@ -265,12 +322,79 @@ export default function Sidebar({ activeSection, onSectionChange, leadCounts }: 
         <a href="/" style={{ display: 'inline-flex', alignItems: 'center', marginBottom: '16px' }}>
           <img src={siteLogo} alt="MibugCredit" style={{ height: 40 }} />
         </a>
-        <Chip
-          label="16 aktive Leads"
-          size="small"
-          color="success"
-          variant="outlined"
-        />
+
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+          <Chip
+            label={`${leadCounts?.total || 0} aktive Leads`}
+            size="small"
+            color="success"
+            variant="outlined"
+          />
+
+          {totalNotifications > 0 && (
+            <Tooltip title="Benachrichtigungen verwalten">
+              <IconButton
+                size="small"
+                onClick={handleNotificationMenuOpen}
+                sx={{ p: 0.5 }}
+              >
+                <Badge badgeContent={totalNotifications} color="error" max={99}>
+                  <NotificationsIcon fontSize="small" />
+                </Badge>
+              </IconButton>
+            </Tooltip>
+          )}
+        </Box>
+
+        {/* Notification Management Menu */}
+        <Menu
+          anchorEl={notificationMenuAnchor}
+          open={Boolean(notificationMenuAnchor)}
+          onClose={handleNotificationMenuClose}
+          PaperProps={{
+            sx: { minWidth: 200 }
+          }}
+        >
+          <MenuItem onClick={handleClearAllNotifications} disabled={totalNotifications === 0}>
+            <ListItemIcon>
+              <ClearAllIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Alle löschen" />
+          </MenuItem>
+          <Divider />
+          {notifications?.activities > 0 && (
+            <MenuItem onClick={() => handleClearSpecificNotification('activities')}>
+              <ListItemIcon>
+                <ClearIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary={`Aktivitäten (${notifications.activities})`} />
+            </MenuItem>
+          )}
+          {notifications?.analytics > 0 && (
+            <MenuItem onClick={() => handleClearSpecificNotification('analytics')}>
+              <ListItemIcon>
+                <ClearIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary={`Analytics (${notifications.analytics})`} />
+            </MenuItem>
+          )}
+          {notifications?.finance > 0 && (
+            <MenuItem onClick={() => handleClearSpecificNotification('finance')}>
+              <ListItemIcon>
+                <ClearIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary={`Finanzen (${notifications.finance})`} />
+            </MenuItem>
+          )}
+          {notifications?.settings > 0 && (
+            <MenuItem onClick={() => handleClearSpecificNotification('settings')}>
+              <ListItemIcon>
+                <ClearIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary={`Einstellungen (${notifications.settings})`} />
+            </MenuItem>
+          )}
+        </Menu>
       </Box>
 
       {/* Main Navigation */}
@@ -283,7 +407,7 @@ export default function Sidebar({ activeSection, onSectionChange, leadCounts }: 
       {/* Bottom Navigation */}
       <Box sx={{ borderTop: '1px solid #e0e0e0', py: 1 }}>
         <List>
-          {bottomMenuItems.map(item => renderMenuItem(item))}
+          {dynamicBottomMenuItems.map(item => renderMenuItem(item))}
         </List>
       </Box>
 

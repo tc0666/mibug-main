@@ -172,6 +172,37 @@ app.post('/admin/api/logout', async (req, res) => {
   }
 });
 
+// Health check endpoint (no auth required)
+app.get('/admin/api/health', async (req, res) => {
+  try {
+    const health = {
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      database: db.useFallback ? 'json-fallback' : 'postgres',
+      auth_configured: AUTH_CONFIGURED
+    };
+
+    // Test database connection
+    if (!db.useFallback) {
+      try {
+        await db.pool.query('SELECT 1');
+        health.database_connection = 'connected';
+      } catch (error) {
+        health.database_connection = 'failed';
+        health.database_error = error.message;
+      }
+    }
+
+    res.json(health);
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // Admin session check endpoint
 app.get('/admin/api/session', async (req, res) => {
   try {
