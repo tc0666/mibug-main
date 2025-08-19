@@ -114,25 +114,7 @@ const menuItems = [
   }
 ];
 
-  // Dynamic bottom menu items
-  const dynamicBottomMenuItems = [
-    {
-      id: 'settings',
-      label: 'Einstellungen',
-      icon: SettingsIcon,
-      badge: notifications?.settings || 0,
-      subItems: [
-        { id: 'settings-general', label: 'Allgemein', icon: SettingsIcon },
-        { id: 'settings-security', label: 'Sicherheit', icon: SecurityIcon },
-        { id: 'settings-notifications', label: 'Benachrichtigungen', icon: NotificationsIcon }
-      ]
-    },
-    {
-      id: 'help',
-      label: 'Hilfe & Support',
-      icon: HelpIcon
-    }
-  ];
+
 
 export default function Sidebar({
   activeSection,
@@ -237,6 +219,26 @@ export default function Sidebar({
     }
     handleNotificationMenuClose();
   };
+
+  // Dynamic bottom menu items
+  const dynamicBottomMenuItems = [
+    {
+      id: 'settings',
+      label: 'Einstellungen',
+      icon: SettingsIcon,
+      badge: notifications?.settings || 0,
+      subItems: [
+        { id: 'settings-general', label: 'Allgemein', icon: SettingsIcon },
+        { id: 'settings-security', label: 'Sicherheit', icon: SecurityIcon },
+        { id: 'settings-notifications', label: 'Benachrichtigungen', icon: NotificationsIcon }
+      ]
+    },
+    {
+      id: 'help',
+      label: 'Hilfe & Support',
+      icon: HelpIcon
+    }
+  ];
 
   // Calculate total notifications
   const totalNotifications = notifications ?
@@ -367,7 +369,7 @@ export default function Sidebar({
               <ListItemIcon>
                 <ClearIcon fontSize="small" />
               </ListItemIcon>
-              <ListItemText primary={`Aktivitäten (${notifications.activities})`} />
+              <ListItemText primary={`Aktivitäten (${notifications?.activities})`} />
             </MenuItem>
           )}
           {notifications?.analytics > 0 && (
@@ -375,7 +377,7 @@ export default function Sidebar({
               <ListItemIcon>
                 <ClearIcon fontSize="small" />
               </ListItemIcon>
-              <ListItemText primary={`Analytics (${notifications.analytics})`} />
+              <ListItemText primary={`Analytics (${notifications?.analytics})`} />
             </MenuItem>
           )}
           {notifications?.finance > 0 && (
@@ -383,7 +385,7 @@ export default function Sidebar({
               <ListItemIcon>
                 <ClearIcon fontSize="small" />
               </ListItemIcon>
-              <ListItemText primary={`Finanzen (${notifications.finance})`} />
+              <ListItemText primary={`Finanzen (${notifications?.finance})`} />
             </MenuItem>
           )}
           {notifications?.settings > 0 && (
@@ -391,7 +393,7 @@ export default function Sidebar({
               <ListItemIcon>
                 <ClearIcon fontSize="small" />
               </ListItemIcon>
-              <ListItemText primary={`Einstellungen (${notifications.settings})`} />
+              <ListItemText primary={`Einstellungen (${notifications?.settings})`} />
             </MenuItem>
           )}
         </Menu>

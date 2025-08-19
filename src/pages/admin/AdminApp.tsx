@@ -434,7 +434,7 @@ export default function AdminApp() {
   const clearAllNotifications = () => clearNotifications();
 
   // Function to add notifications (for testing/demo purposes)
-  const addNotification = (section: keyof typeof notifications, count: number = 1) => {
+  const addNotification = (section: 'activities' | 'analytics' | 'finance' | 'settings', count: number = 1) => {
     setNotifications(prev => ({
       ...prev,
       [section]: prev[section] + count
