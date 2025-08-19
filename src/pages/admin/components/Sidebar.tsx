@@ -53,6 +53,8 @@ interface SidebarProps {
     followUp: number;
   };
   onMarkAllLeadsAsRead?: () => void;
+  onMobileClose?: () => void;
+  isMobile?: boolean;
 }
 
 const menuItems = [
@@ -113,7 +115,9 @@ export default function Sidebar({
   activeSection,
   onSectionChange,
   leadCounts,
-  onMarkAllLeadsAsRead
+  onMarkAllLeadsAsRead,
+  onMobileClose,
+  isMobile = false
 }: SidebarProps) {
   const [expandedItems, setExpandedItems] = useState<string[]>(['leads']);
   const [notificationMenuAnchor, setNotificationMenuAnchor] = useState<null | HTMLElement>(null);
@@ -182,6 +186,10 @@ export default function Sidebar({
       );
     } else {
       onSectionChange(itemId);
+      // Close mobile drawer when item is selected
+      if (isMobile && onMobileClose) {
+        onMobileClose();
+      }
     }
   };
 
@@ -288,10 +296,10 @@ export default function Sidebar({
   return (
     <Box
       sx={{
-        width: 280,
+        width: '100%',
         height: '100vh',
         backgroundColor: 'white',
-        borderRight: '1px solid #e0e0e0',
+        borderRight: isMobile ? 'none' : '1px solid #e0e0e0',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden'

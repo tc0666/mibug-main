@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Box, Button, Toolbar, Typography, Paper, Container } from '@mui/material';
+import { Box, Button, Toolbar, Typography, Paper, Container, IconButton, useMediaQuery, useTheme, Drawer } from '@mui/material';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import MenuIcon from '@mui/icons-material/Menu';
 import LoginForm from './LoginForm';
 import LeadsTable from './components/LeadsTable';
 import LeadsToolbar from './components/LeadsToolbar';
@@ -152,6 +153,10 @@ export default function AdminApp() {
   const [totalCount, setTotalCount] = useState(0);
   const [activeSection, setActiveSection] = useState('leads-all');
   const [showNewLeadModal, setShowNewLeadModal] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // Track read leads with localStorage persistence
   const [readLeads, setReadLeads] = useState(() => {
@@ -459,6 +464,10 @@ export default function AdminApp() {
     setDetailsLead(null);
   };
 
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
   if (isCheckingSession) {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
@@ -565,21 +574,83 @@ export default function AdminApp() {
     );
   };
 
+  const drawerWidth = 280;
+
+  const drawer = (
+    <Sidebar
+      activeSection={activeSection}
+      onSectionChange={setActiveSection}
+      leadCounts={leadCounts}
+      onMarkAllLeadsAsRead={markAllLeadsAsRead}
+      onMobileClose={() => setMobileOpen(false)}
+      isMobile={isMobile}
+    />
+  );
+
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
-      {/* Sidebar */}
-      <Sidebar
-        activeSection={activeSection}
-        onSectionChange={setActiveSection}
-        leadCounts={leadCounts}
-        onMarkAllLeadsAsRead={markAllLeadsAsRead}
-      />
+      {/* Mobile Drawer */}
+      {isMobile && (
+        <Drawer
+          variant="temporary"
+          open={mobileOpen}
+          onClose={handleDrawerToggle}
+          ModalProps={{
+            keepMounted: true, // Better open performance on mobile.
+          }}
+          sx={{
+            '& .MuiDrawer-paper': {
+              boxSizing: 'border-box',
+              width: drawerWidth,
+              backgroundColor: 'white'
+            },
+          }}
+        >
+          {drawer}
+        </Drawer>
+      )}
+
+      {/* Desktop Sidebar */}
+      {!isMobile && (
+        <Box
+          sx={{
+            width: drawerWidth,
+            flexShrink: 0,
+          }}
+        >
+          {drawer}
+        </Box>
+      )}
 
       {/* Main Content Area */}
-      <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        width: { md: `calc(100% - ${drawerWidth}px)` }
+      }}>
         {/* Header */}
         <Paper elevation={0} sx={{ borderBottom: '1px solid #e0e0e0', zIndex: 1 }}>
-          <Toolbar sx={{ px: 3, display: 'flex', justifyContent: 'flex-end' }}>
+          <Toolbar sx={{
+            px: { xs: 2, md: 3 },
+            display: 'flex',
+            justifyContent: 'space-between',
+            minHeight: { xs: 56, md: 64 }
+          }}>
+            {isMobile && (
+              <IconButton
+                color="inherit"
+                aria-label="open drawer"
+                edge="start"
+                onClick={handleDrawerToggle}
+                sx={{ mr: 2 }}
+              >
+                <MenuIcon />
+              </IconButton>
+            )}
+
+            <Box sx={{ flexGrow: 1 }} />
+
             <Button
               size="small"
               variant="outlined"
@@ -587,13 +658,20 @@ export default function AdminApp() {
               onClick={handleLogout}
               sx={{ borderRadius: 2 }}
             >
-              Logout
+              {isMobile ? '' : 'Logout'}
             </Button>
           </Toolbar>
         </Paper>
 
         {/* Main Content */}
-        <Container maxWidth={false} sx={{ p: 0, flexGrow: 1 }}>
+        <Container
+          maxWidth={false}
+          sx={{
+            p: { xs: 1, md: 0 },
+            flexGrow: 1,
+            overflow: 'auto'
+          }}
+        >
           {renderMainContent()}
         </Container>
       </Box>

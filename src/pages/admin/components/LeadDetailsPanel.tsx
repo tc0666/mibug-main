@@ -22,7 +22,9 @@ import {
   ListItem,
   ListItemText,
   ListItemIcon,
-  Tooltip
+  Tooltip,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -156,6 +158,9 @@ export default function LeadDetailsPanel({ open, lead, onClose, onUpdate }: Lead
   const [editData, setEditData] = useState<Partial<Lead>>({});
   const [activeTab, setActiveTab] = useState(0);
 
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   if (!lead) return null;
 
   const handleEdit = () => {
@@ -203,7 +208,11 @@ export default function LeadDetailsPanel({ open, lead, onClose, onUpdate }: Lead
       open={open}
       onClose={onClose}
       PaperProps={{
-        sx: { width: 480, maxWidth: '90vw' }
+        sx: {
+          width: isMobile ? '100vw' : 480,
+          maxWidth: '100vw',
+          height: '100vh'
+        }
       }}
     >
       <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -325,25 +334,25 @@ export default function LeadDetailsPanel({ open, lead, onClose, onUpdate }: Lead
                     Finanzinformationen
                   </Typography>
                   <Grid container spacing={2}>
-                    <Grid item xs={6}>
+                    <Grid item xs={12} sm={6}>
                       <Typography variant="caption" color="text.secondary">Kreditbetrag</Typography>
                       <Typography variant="h6" color="primary">
                         {formatCurrency(lead.creditAmount)}
                       </Typography>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid item xs={12} sm={6}>
                       <Typography variant="caption" color="text.secondary">Laufzeit</Typography>
                       <Typography variant="body1">
                         {lead.duration} Monate
                       </Typography>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid item xs={12} sm={6}>
                       <Typography variant="caption" color="text.secondary">Einkommen</Typography>
                       <Typography variant="body1">
                         {formatCurrency(lead.income)}
                       </Typography>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid item xs={12} sm={6}>
                       <Typography variant="caption" color="text.secondary">Warmmiete</Typography>
                       <Typography variant="body1">
                         {formatCurrency(lead.rentIncludingHeating)}

@@ -16,7 +16,9 @@ import {
   Menu,
   MenuItem,
   Tooltip,
-  Paper
+  Paper,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import {
   MoreVert as MoreVertIcon,
@@ -152,6 +154,10 @@ export default function LeadsTable({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
 
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
+
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>, leadId: string) => {
     event.stopPropagation();
     setAnchorEl(event.currentTarget);
@@ -202,7 +208,17 @@ export default function LeadsTable({
   const isIndeterminate = selected.length > 0 && selected.length < leads.length;
 
   return (
-    <TableContainer component={Paper} sx={{ boxShadow: 'none', border: '1px solid #e0e0e0' }}>
+    <TableContainer
+      component={Paper}
+      sx={{
+        boxShadow: 'none',
+        border: '1px solid #e0e0e0',
+        overflowX: 'auto',
+        '& .MuiTable-root': {
+          minWidth: isMobile ? 800 : 'auto'
+        }
+      }}
+    >
       <Table stickyHeader>
         <TableHead>
           <TableRow sx={{ '& .MuiTableCell-head': { backgroundColor: '#fafafa', fontWeight: 600 } }}>
@@ -232,15 +248,17 @@ export default function LeadsTable({
                 Status
               </TableSortLabel>
             </TableCell>
-            <TableCell>
-              <TableSortLabel
-                active={sortField === 'label'}
-                direction={sortField === 'label' ? sortDirection : 'asc'}
-                onClick={() => onSort('label')}
-              >
-                Label
-              </TableSortLabel>
-            </TableCell>
+            {!isMobile && (
+              <TableCell>
+                <TableSortLabel
+                  active={sortField === 'label'}
+                  direction={sortField === 'label' ? sortDirection : 'asc'}
+                  onClick={() => onSort('label')}
+                >
+                  Label
+                </TableSortLabel>
+              </TableCell>
+            )}
             <TableCell>
               <TableSortLabel
                 active={sortField === 'creditAmount'}
@@ -250,16 +268,20 @@ export default function LeadsTable({
                 Kreditbetrag
               </TableSortLabel>
             </TableCell>
-            <TableCell>Beruf & Wohnsituation</TableCell>
-            <TableCell>
-              <TableSortLabel
-                active={sortField === 'createdAt'}
-                direction={sortField === 'createdAt' ? sortDirection : 'asc'}
-                onClick={() => onSort('createdAt')}
-              >
-                Erstellt
-              </TableSortLabel>
-            </TableCell>
+            {!isMobile && (
+              <TableCell>Beruf & Wohnsituation</TableCell>
+            )}
+            {!isTablet && (
+              <TableCell>
+                <TableSortLabel
+                  active={sortField === 'createdAt'}
+                  direction={sortField === 'createdAt' ? sortDirection : 'asc'}
+                  onClick={() => onSort('createdAt')}
+                >
+                  Erstellt
+                </TableSortLabel>
+              </TableCell>
+            )}
             <TableCell width={50}></TableCell>
           </TableRow>
         </TableHead>
@@ -351,14 +373,16 @@ export default function LeadsTable({
                 />
               </TableCell>
 
-              <TableCell>
-                <Chip
-                  label={lead.label}
-                  size="small"
-                  color={labelColors[lead.label] as any || 'default'}
-                  variant="outlined"
-                />
-              </TableCell>
+              {!isMobile && (
+                <TableCell>
+                  <Chip
+                    label={lead.label}
+                    size="small"
+                    color={labelColors[lead.label] as any || 'default'}
+                    variant="outlined"
+                  />
+                </TableCell>
+              )}
 
               <TableCell>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -367,35 +391,49 @@ export default function LeadsTable({
                     {formatCurrency(lead.creditAmount)}
                   </Typography>
                 </Box>
-                {lead.income && (
+                {lead.income && !isMobile && (
                   <Typography variant="caption" color="text.secondary">
                     Einkommen: {formatCurrency(lead.income)}
                   </Typography>
                 )}
+                {/* Show label on mobile in credit amount column */}
+                {isMobile && (
+                  <Chip
+                    label={lead.label}
+                    size="small"
+                    color={labelColors[lead.label] as any || 'default'}
+                    variant="outlined"
+                    sx={{ mt: 0.5 }}
+                  />
+                )}
               </TableCell>
 
-              <TableCell>
-                <Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                    <PersonIcon sx={{ fontSize: 14, color: '#666' }} />
-                    <Typography variant="caption">
-                      {translateField('professionalGroup', lead.professionalGroup)}
+              {!isMobile && (
+                <TableCell>
+                  <Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                      <PersonIcon sx={{ fontSize: 14, color: '#666' }} />
+                      <Typography variant="caption">
+                        {translateField('professionalGroup', lead.professionalGroup)}
+                      </Typography>
+                    </Box>
+                    <Typography variant="caption" color="text.secondary">
+                      {translateField('familyStatus', lead.familyStatus)} • {translateField('livingSituation', lead.livingSituation)}
                     </Typography>
                   </Box>
-                  <Typography variant="caption" color="text.secondary">
-                    {translateField('familyStatus', lead.familyStatus)} • {translateField('livingSituation', lead.livingSituation)}
-                  </Typography>
-                </Box>
-              </TableCell>
+                </TableCell>
+              )}
 
-              <TableCell>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CalendarIcon sx={{ fontSize: 14, color: '#666' }} />
-                  <Typography variant="caption" color="text.secondary">
-                    {formatDate(lead.createdAt)}
-                  </Typography>
-                </Box>
-              </TableCell>
+              {!isTablet && (
+                <TableCell>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CalendarIcon sx={{ fontSize: 14, color: '#666' }} />
+                    <Typography variant="caption" color="text.secondary">
+                      {formatDate(lead.createdAt)}
+                    </Typography>
+                  </Box>
+                </TableCell>
+              )}
 
               <TableCell>
                 <Tooltip title="Aktionen">
