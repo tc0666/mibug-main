@@ -8,6 +8,14 @@ const { v4: uuidv4 } = require('uuid');
 const ExcelJS = require('exceljs');
 const Database = require('./database/database');
 
+// Utility function to generate user-friendly customer number from UUID
+const generateCustomerNumber = (uuid) => {
+  // Take first 8 characters of UUID and convert to uppercase
+  const shortId = uuid.replace(/-/g, '').substring(0, 8).toUpperCase();
+  const year = new Date().getFullYear();
+  return `KD-${year}-${shortId}`;
+};
+
 const app = express();
 app.use(express.json({ limit: '1mb' }));
 app.use(helmet());
@@ -224,6 +232,40 @@ app.get('/admin/api/session', async (req, res) => {
   }
 });
 
+// Public endpoint to get user/lead data for confirmation page
+app.get('/users/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Get lead data by ID
+    const filters = {};
+    const result = await db.getLeads(filters, { page: 1, limit: 1000 });
+    const lead = result.items.find(item => item.id === id);
+
+    if (!lead) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Return user data in the format expected by the confirmation page
+    const userData = {
+      id: lead.id,
+      firstName: lead.firstName,
+      lastName: lead.lastName,
+      gender: lead.gender,
+      email: lead.email,
+      phone: lead.phone,
+      clientNumber: generateCustomerNumber(lead.id), // Generate user-friendly customer number
+      creditAmount: lead.creditAmount,
+      duration: lead.duration
+    };
+
+    res.json(userData);
+  } catch (error) {
+    console.error('Get user error:', error);
+    res.status(500).json({ error: 'Failed to fetch user data' });
+  }
+});
+
 // Admin-protected APIs
 app.use('/admin/api', (req, res, next) => {
   if (req.path === '/lead' && req.method === 'POST') return next(); // public ingestion handled above
@@ -235,12 +277,13 @@ app.use('/admin/api', (req, res, next) => {
 
 app.get('/admin/api/leads', async (req, res) => {
   try {
-    const { search = '', label, status, from, to, page = '1', limit = '20', sortField, sortDirection } = req.query;
+    const { search = '', label, status, from, to, page = '1', limit = '20', sortField, sortDirection, excludeReadLeads } = req.query;
 
     const filters = {
       search: search || undefined,
       label: label || undefined,
       status: status || undefined,
+      excludeReadLeads: excludeReadLeads ? JSON.parse(excludeReadLeads) : undefined,
       from: from ? new Date(String(from)) : undefined,
       to: to ? new Date(String(to)) : undefined
     };
@@ -256,6 +299,15 @@ app.get('/admin/api/leads', async (req, res) => {
     };
 
     const result = await db.getLeads(filters, pagination, sorting);
+
+    // Add customer numbers to each lead
+    if (result.items) {
+      result.items = result.items.map(lead => ({
+        ...lead,
+        customerNumber: generateCustomerNumber(lead.id)
+      }));
+    }
+
     res.json(result);
   } catch (error) {
     console.error('Get leads error:', error);

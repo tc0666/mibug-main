@@ -59,7 +59,13 @@ export class ApiService {
   }
 
   async createDeal(newDealData: Record<string, any>): Promise<{ id: number }> {
-    const response = await this.axiosInstance.post('/deals', newDealData);
+    // Use local server endpoint instead of external API
+    const response = await axios.post('/admin/api/lead', newDealData, {
+      headers: {
+        'Accept': "application/json",
+        'Content-Type': "application/json",
+      }
+    });
     return response.data;
   }
 

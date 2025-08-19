@@ -257,7 +257,10 @@ const Index: React.FC = () => {
 
     const { isValid, errors } = validateQueryParams(queryParams);
     if (!isValid) {
-      console.info(errors.join(', '));
+      // Only log validation errors in development mode
+      if (process.env.NODE_ENV === 'development') {
+        console.info('Query param validation:', errors.join(', '));
+      }
     }
   }, [delay, location.search]);
 
@@ -289,57 +292,68 @@ const Index: React.FC = () => {
     }
   }
 
+  // Helper function to convert formatted currency string to number
+  const parseCurrencyToNumber = (formattedValue: string | number): number => {
+    if (typeof formattedValue === 'number') return formattedValue;
+    if (!formattedValue) return 0;
+    // Remove dots used as thousand separators and convert to number
+    return parseFloat(String(formattedValue).replace(/\./g, '')) || 0;
+  };
+
   const createDealWithPersonAndNavigate = async (data: StepFormData) => {
     const payload = {
       ...data,
+      // Convert formatted currency strings to numbers
+      income: parseCurrencyToNumber(data.income),
+      rentIncludingHeating: parseCurrencyToNumber(data.rentIncludingHeating),
       residentSince: dayjs(data.date).isValid() ? dayjs(data?.residentSince).format('YYYY') : '',
       date: dayjs(data.date).isValid() ? dayjs(data?.date).format('YYYY-MM') : '',
     };
 
-    // 1) Create the deal using existing backend
-    const response = await createDealWithPerson(payload);
+    // Create the deal using the admin backend (single submission)
+    // Translate enum codes to the exact German labels the customer saw in the form
+    const familyStatusMap: Record<string, string> = { SINGLE: 'ledig', MARRIED: 'verheiratet', WIDOWED: 'verwitwet', DIVORCED: 'geschieden' };
+    const livingSituationMap: Record<string, string> = {
+      RENT: 'zur Miete', OWN: 'im Wohneigentum', // legacy
+      RENTING: 'zur Miete', RENTFREE: 'mietfrei', PARENTS: 'bei den Eltern', PROPERTY: 'im Wohneigentum'
+    };
+    const genderMap: Record<string, string> = { FEMALE: 'Frau', MALE: 'Herr', Frau: 'Frau', Herr: 'Herr' };
+    const countryMap: Record<string, string> = { DE: 'Deutschland', AT: 'Österreich', CH: 'Schweiz', germany: 'Deutschland', austria: 'Österreich', swiss: 'Schweiz' };
+    const professionalGroupMap: Record<string, string> = {
+      EMPLOYEE: 'Angestellte/r', EMPLOYEE_REDUCED_HOURS: 'Angestellte/r in Kurzarbeit', WORKER: 'Arbeiter/in',
+      EMPLOYEE_PUBLIC_SERVICE: 'Angestellte/r im öffent. Dienst', CRAFTSMAN: 'Facharbeiter/in', MANAGER: 'Leitende/r Angestellte/r',
+      RETIREE: 'Rentner/in', PENSIONER: 'Pensionär/in', EMPLOYEE_IN_PARENTAL_LEAVE: 'Angestellte/r in Elternzeit',
+      EMPLOYEE_TEMPORARY_WORK: 'Angestellte/r über Zeitarbeitsfirma', EMPLOYEE_ABROAD: 'Angestellte/r im Ausland', EMPLOYEE_DOCTOR: 'Angestelltes ärztliches Fachpersonal',
+      EMPLOYEE_MINIJOB: 'Angestellte/r (Minijob 450 EUR Basis)', EMPLOYEE_SICK: 'Angestellte/r (im Krankenstand / Krankengeldbezug)',
+      WORKER_PUBLIC_SERVICE: 'Arbeiter/in im öffent. Dienst', WORKER_PARENTAL_LEAVE: 'Arbeiter/in in Elternzeit', UNEMPLOYED: 'Arbeitslose, Sozialhilfeempfänger, ohne Beschäftigung',
+      APPRENTICE: 'Auszubildende/r', OFFICER_LOWER_SERVICE: 'Beamte/r im einfachen Dienst', OFFICER_UPPER_SERVICE: 'Beamte/r im gehobenen Dienst',
+      OFFICER_HIGHER_SERVICE: 'Beamte/r im höheren Dienst', OFFICER_MIDDLE_SERVICE: 'Beamte/r im mittleren Dienst', HOUSEWIFE: 'Hausfrau/-mann'
+    };
 
-    // 2) Mirror into admin CRM (best-effort; ignore failures)
-    try {
-      // Translate enum codes to the exact German labels the customer saw in the form
-      const familyStatusMap: Record<string, string> = { SINGLE: 'ledig', MARRIED: 'verheiratet', WIDOWED: 'verwitwet', DIVORCED: 'geschieden' };
-      const livingSituationMap: Record<string, string> = {
-        RENT: 'zur Miete', OWN: 'im Wohneigentum', // legacy
-        RENTING: 'zur Miete', RENTFREE: 'mietfrei', PARENTS: 'bei den Eltern', PROPERTY: 'im Wohneigentum'
-      };
-      const genderMap: Record<string, string> = { FEMALE: 'Frau', MALE: 'Herr', Frau: 'Frau', Herr: 'Herr' };
-      const countryMap: Record<string, string> = { DE: 'Deutschland', AT: 'Österreich', CH: 'Schweiz', germany: 'Deutschland', austria: 'Österreich', swiss: 'Schweiz' };
-      const professionalGroupMap: Record<string, string> = {
-        EMPLOYEE: 'Angestellte/r', EMPLOYEE_REDUCED_HOURS: 'Angestellte/r in Kurzarbeit', WORKER: 'Arbeiter/in',
-        EMPLOYEE_PUBLIC_SERVICE: 'Angestellte/r im öffent. Dienst', CRAFTSMAN: 'Facharbeiter/in', MANAGER: 'Leitende/r Angestellte/r',
-        RETIREE: 'Rentner/in', PENSIONER: 'Pensionär/in', EMPLOYEE_IN_PARENTAL_LEAVE: 'Angestellte/r in Elternzeit',
-        EMPLOYEE_TEMPORARY_WORK: 'Angestellte/r über Zeitarbeitsfirma', EMPLOYEE_ABROAD: 'Angestellte/r im Ausland', EMPLOYEE_DOCTOR: 'Angestelltes ärztliches Fachpersonal',
-        EMPLOYEE_MINIJOB: 'Angestellte/r (Minijob 450 EUR Basis)', EMPLOYEE_SICK: 'Angestellte/r (im Krankenstand / Krankengeldbezug)',
-        WORKER_PUBLIC_SERVICE: 'Arbeiter/in im öffent. Dienst', WORKER_PARENTAL_LEAVE: 'Arbeiter/in in Elternzeit', UNEMPLOYED: 'Arbeitslose, Sozialhilfeempfänger, ohne Beschäftigung',
-        APPRENTICE: 'Auszubildende/r', OFFICER_LOWER_SERVICE: 'Beamte/r im einfachen Dienst', OFFICER_UPPER_SERVICE: 'Beamte/r im gehobenen Dienst',
-        OFFICER_HIGHER_SERVICE: 'Beamte/r im höheren Dienst', OFFICER_MIDDLE_SERVICE: 'Beamte/r im mittleren Dienst', HOUSEWIFE: 'Hausfrau/-mann'
-      };
+    const adminPayload = {
+      ...payload,
+      // Ensure currency values are numbers for admin CRM
+      income: parseCurrencyToNumber(data.income),
+      rentIncludingHeating: parseCurrencyToNumber(data.rentIncludingHeating),
+      familyStatus: familyStatusMap[payload.familyStatus] || payload.familyStatus,
+      livingSituation: livingSituationMap[payload.livingSituation] || payload.livingSituation,
+      professionalGroup: professionalGroupMap[payload.professionalGroup] || payload.professionalGroup,
+      gender: genderMap[payload.gender] || payload.gender,
+      country: countryMap[payload.country] || payload.country,
+    };
 
-      const adminPayload = {
-        ...payload,
-        familyStatus: familyStatusMap[payload.familyStatus] || payload.familyStatus,
-        livingSituation: livingSituationMap[payload.livingSituation] || payload.livingSituation,
-        professionalGroup: professionalGroupMap[payload.professionalGroup] || payload.professionalGroup,
-        gender: genderMap[payload.gender] || payload.gender,
-        country: countryMap[payload.country] || payload.country,
-      };
+    const response = await fetch('/admin/api/lead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(adminPayload),
+    });
 
-      fetch('/admin/api/lead', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(adminPayload),
-      }).catch(() => {});
-    } catch {}
+    const result = await response.json();
 
     await delay(1000)
-    if(response?.id) {
-      console.log('Deal Created:', response);
-      navigate(`/submission-confirmation/?ref=${response?.id}`);
+    if(result?.id) {
+      console.log('Lead Created:', result);
+      navigate(`/submission-confirmation/?ref=${result?.id}`);
     }
   };
 
@@ -360,8 +374,18 @@ const Index: React.FC = () => {
   };
 
   const onNextStep = async () => {
+    console.log(`Attempting to proceed from step ${currentStep}`);
     const valid = await methods.trigger();
 
+    // Debug validation errors
+    if (!valid) {
+      console.log('Form validation failed. Current step:', currentStep);
+      console.log('Validation errors:', methods.formState.errors);
+      console.log('Form values:', methods.getValues());
+      return;
+    }
+
+    console.log('Form validation passed. Current step:', currentStep);
     if (valid) {
       if(currentStep === 3) {
         await delayStep(4000)

@@ -223,12 +223,47 @@ export default function AdminApp() {
     setIsCheckingSession(false);
   };
 
+  // Get filters based on active section
+  const getSectionFilters = () => {
+    // Don't modify the original filters object
+    const sectionFilters = { ...filters };
+
+    // Clear any existing section-specific filters first
+    delete sectionFilters.sectionFilter;
+    delete sectionFilters.excludeReadLeads;
+
+    switch (activeSection) {
+      case 'leads-new':
+        // Show only leads with "New" status that haven't been read yet
+        sectionFilters.status = 'New';
+        sectionFilters.excludeReadLeads = [...readLeads]; // Pass read lead IDs to exclude
+        break;
+      case 'leads-qualified':
+        // Show only leads with "Qualified" status
+        sectionFilters.status = 'Qualified';
+        break;
+      case 'leads-follow-up':
+        // Show only leads with "Follow-Up" status
+        sectionFilters.status = 'Follow-Up';
+        break;
+      case 'leads-all':
+      default:
+        // Show all leads - use existing filters
+        break;
+    }
+
+    return sectionFilters;
+  };
+
   const fetchLeads = async () => {
     if (!sessionId) return;
     const params = new URLSearchParams();
     if (search) params.set('search', search);
-    if (filters.status) params.set('status', filters.status);
-    if (filters.label) params.set('label', filters.label);
+
+    // Apply section-specific filters
+    const effectiveFilters = getSectionFilters();
+    if (effectiveFilters.status) params.set('status', effectiveFilters.status);
+    if (effectiveFilters.label) params.set('label', effectiveFilters.label);
 
     // Convert dateRange to from/to dates
     if (filters.dateRange) {
@@ -288,7 +323,7 @@ export default function AdminApp() {
   };
 
   useEffect(() => { checkSession(); }, []);
-  useEffect(() => { if (sessionId) fetchLeads(); }, [sessionId, search, filters, sortField, sortDirection]);
+  useEffect(() => { if (sessionId) fetchLeads(); }, [sessionId, search, filters, sortField, sortDirection, activeSection]);
 
   const handleBulkDelete = async () => {
     if (selectedLeads.length === 0 || !sessionId) return;
@@ -508,10 +543,18 @@ export default function AdminApp() {
         }}>
           <Box sx={{ mb: { xs: 2, md: 4 } }}>
             <Typography variant="h4" sx={{ fontWeight: 600, mb: 1 }}>
-              Leads
+              {activeSection === 'leads-new' && 'Neue Leads'}
+              {activeSection === 'leads-qualified' && 'Qualifizierte Leads'}
+              {activeSection === 'leads-follow-up' && 'Follow-Up Leads'}
+              {activeSection === 'leads-all' && 'Alle Leads'}
+              {!activeSection.startsWith('leads') && 'Leads'}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Verwalten Sie Ihre Leads und verfolgen Sie den Fortschritt
+              {activeSection === 'leads-new' && 'Neue, noch nicht bearbeitete Leads'}
+              {activeSection === 'leads-qualified' && 'Als qualifiziert markierte Leads'}
+              {activeSection === 'leads-follow-up' && 'Leads die eine Nachverfolgung benötigen'}
+              {activeSection === 'leads-all' && 'Verwalten Sie Ihre Leads und verfolgen Sie den Fortschritt'}
+              {!activeSection.startsWith('leads') && 'Verwalten Sie Ihre Leads und verfolgen Sie den Fortschritt'}
             </Typography>
           </Box>
 

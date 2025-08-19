@@ -17,10 +17,12 @@ const validatePositiveNumber = (value: QueryParam): boolean => {
 };
 
 const validateDeposit = (deposit: QueryParam, creditAmount = 0): boolean => {
-  return (
-    deposit === null ||
-    (typeof deposit === 'number' && deposit >= 0 && deposit <= (creditAmount || 0) - 500)
-  );
+  if (deposit === null) return true;
+
+  const depositNum = Number(deposit);
+  if (isNaN(depositNum)) return false;
+
+  return depositNum >= 0 && depositNum <= (creditAmount || 0) - 500;
 };
 
 export const validateQueryParams = (queryParams: URLSearchParams): ValidationResult => {
@@ -33,7 +35,8 @@ export const validateQueryParams = (queryParams: URLSearchParams): ValidationRes
   }
 
   // Validate creditAmount
-  const creditAmount = Number(queryParams.get(QUERY_PARAMS.CREDIT_AMOUNT));
+  const creditAmountParam = queryParams.get(QUERY_PARAMS.CREDIT_AMOUNT);
+  const creditAmount = creditAmountParam ? Number(creditAmountParam) : 20000; // Use same default as form
   if (!validatePositiveNumber(creditAmount)) {
     errors.push('Invalid credit amount.');
   }

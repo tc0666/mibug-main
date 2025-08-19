@@ -283,7 +283,7 @@ class Database {
 
   async getLeads(filters = {}, pagination = {}, sorting = {}) {
     if (this.useFallback) {
-      const { search, label, status, from, to } = filters;
+      const { search, label, status, excludeReadLeads, from, to } = filters;
       const { page = 1, limit = 20 } = pagination;
       const { field = 'createdAt', direction = 'desc' } = sorting;
 
@@ -307,6 +307,13 @@ class Database {
       if (status) {
         filtered = filtered.filter(lead => lead.status === status);
       }
+
+      // Exclude read leads (for "New" leads section)
+      if (excludeReadLeads && Array.isArray(excludeReadLeads)) {
+        filtered = filtered.filter(lead => !excludeReadLeads.includes(lead.id));
+      }
+
+
 
       if (from) {
         filtered = filtered.filter(lead => new Date(lead.createdAt) >= new Date(from));
@@ -366,7 +373,7 @@ class Database {
       };
     }
 
-    const { search, label, status, from, to } = filters;
+    const { search, label, status, excludeReadLeads, from, to } = filters;
     const { page = 1, limit = 20 } = pagination;
     const { field = 'createdAt', direction = 'desc' } = sorting;
     const offset = (page - 1) * limit;
@@ -397,6 +404,16 @@ class Database {
       whereConditions.push(`status = $${paramCount}`);
       params.push(status);
     }
+
+    // Exclude read leads (for "New" leads section)
+    if (excludeReadLeads && Array.isArray(excludeReadLeads) && excludeReadLeads.length > 0) {
+      const placeholders = excludeReadLeads.map((_, index) => `$${paramCount + index + 1}`).join(', ');
+      whereConditions.push(`id NOT IN (${placeholders})`);
+      params.push(...excludeReadLeads);
+      paramCount += excludeReadLeads.length;
+    }
+
+
 
     if (from) {
       paramCount++;

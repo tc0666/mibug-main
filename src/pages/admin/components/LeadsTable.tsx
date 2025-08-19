@@ -587,6 +587,9 @@ export default function LeadsTable({
               </TableSortLabel>
             </TableCell>
             <TableCell>
+              Kundennummer
+            </TableCell>
+            <TableCell>
               <TableSortLabel
                 active={sortField === 'status'}
                 direction={sortField === 'status' ? sortDirection : 'asc'}
@@ -629,7 +632,7 @@ export default function LeadsTable({
         <TableBody>
           {leads.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={8} sx={{ textAlign: 'center', py: 4 }}>
+              <TableCell colSpan={9} sx={{ textAlign: 'center', py: 4 }}>
                 <Typography variant="body1" color="text.secondary">
                   Keine Leads gefunden
                 </Typography>
@@ -699,6 +702,20 @@ export default function LeadsTable({
                     )}
                   </Box>
                 </Box>
+              </TableCell>
+
+              <TableCell>
+                <Typography
+                  variant="body2"
+                  fontWeight={600}
+                  sx={{
+                    fontFamily: 'monospace',
+                    color: '#1976d2',
+                    fontSize: '0.875rem'
+                  }}
+                >
+                  {(lead as any).customerNumber || 'N/A'}
+                </Typography>
               </TableCell>
 
               <TableCell>
