@@ -499,8 +499,14 @@ export default function AdminApp() {
 
     if (activeSection.startsWith('leads')) {
       return (
-        <Box sx={{ p: 4 }}>
-          <Box sx={{ mb: 4 }}>
+        <Box sx={{
+          p: { xs: 1, md: 4 },
+          width: '100%',
+          maxWidth: '100%',
+          boxSizing: 'border-box',
+          overflow: 'hidden'
+        }}>
+          <Box sx={{ mb: { xs: 2, md: 4 } }}>
             <Typography variant="h4" sx={{ fontWeight: 600, mb: 1 }}>
               Leads
             </Typography>
@@ -510,7 +516,13 @@ export default function AdminApp() {
           </Box>
 
           {/* Leads Management Interface */}
-          <Paper elevation={0} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+          <Paper elevation={0} sx={{
+            borderRadius: 2,
+            overflow: 'hidden',
+            width: '100%',
+            maxWidth: '100%',
+            boxSizing: 'border-box'
+          }}>
             <LeadsToolbar
               search={search}
               onSearchChange={setSearch}
@@ -616,6 +628,14 @@ export default function AdminApp() {
           sx={{
             width: drawerWidth,
             flexShrink: 0,
+            position: 'fixed',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            zIndex: 1200,
+            backgroundColor: 'white',
+            borderRight: '1px solid #e0e0e0',
+            overflow: 'hidden'
           }}
         >
           {drawer}
@@ -627,7 +647,8 @@ export default function AdminApp() {
         flexGrow: 1,
         display: 'flex',
         flexDirection: 'column',
-        width: { md: `calc(100% - ${drawerWidth}px)` }
+        marginLeft: { xs: 0, md: `${drawerWidth}px` },
+        width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` }
       }}>
         {/* Header */}
         <Paper elevation={0} sx={{ borderBottom: '1px solid #e0e0e0', zIndex: 1 }}>
@@ -667,9 +688,12 @@ export default function AdminApp() {
         <Container
           maxWidth={false}
           sx={{
-            p: { xs: 1, md: 0 },
+            p: { xs: 0, md: 0 },
             flexGrow: 1,
-            overflow: 'auto'
+            overflow: 'auto',
+            width: '100%',
+            maxWidth: '100vw',
+            boxSizing: 'border-box'
           }}
         >
           {renderMainContent()}

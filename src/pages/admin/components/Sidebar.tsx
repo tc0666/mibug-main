@@ -299,10 +299,11 @@ export default function Sidebar({
         width: '100%',
         height: '100vh',
         backgroundColor: 'white',
-        borderRight: isMobile ? 'none' : '1px solid #e0e0e0',
+        borderRight: isMobile ? 'none' : 'none', // Border handled by parent container
         display: 'flex',
         flexDirection: 'column',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        position: 'relative'
       }}
     >
       {/* Header */}

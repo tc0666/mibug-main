@@ -16,7 +16,9 @@ import {
   ListItemText,
   Divider,
   Typography,
-  Badge
+  Badge,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -99,6 +101,9 @@ export default function LeadsToolbar({
   const [bulkMenuAnchor, setBulkMenuAnchor] = useState<null | HTMLElement>(null);
   const [moreMenuAnchor, setMoreMenuAnchor] = useState<null | HTMLElement>(null);
 
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   const activeFiltersCount = Object.values(filters).filter(Boolean).length;
 
   const handleFilterChange = (key: string, value: string) => {
@@ -110,7 +115,7 @@ export default function LeadsToolbar({
   };
 
   return (
-    <Box sx={{ p: 2, borderBottom: '1px solid #e0e0e0', backgroundColor: 'white' }}>
+    <Box sx={{ p: { xs: 1, md: 2 }, borderBottom: '1px solid #e0e0e0', backgroundColor: 'white' }}>
       {/* Main Toolbar */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
         {/* Search */}

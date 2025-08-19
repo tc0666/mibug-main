@@ -18,7 +18,11 @@ import {
   Tooltip,
   Paper,
   useMediaQuery,
-  useTheme
+  useTheme,
+  Card,
+  CardContent,
+  Stack,
+  Divider
 } from '@mui/material';
 import {
   MoreVert as MoreVertIcon,
@@ -169,6 +173,16 @@ export default function LeadsTable({
     setSelectedLeadId(null);
   };
 
+  const getInitials = (firstName: string, lastName: string) => {
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  };
+
+  const getAvatarColor = (name: string) => {
+    const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800', '#ff5722'];
+    const index = name.charCodeAt(0) % colors.length;
+    return colors[index];
+  };
+
   const handleStatusChange = (status: string) => {
     if (selectedLeadId) {
       onStatusChange(selectedLeadId, status);
@@ -200,23 +214,356 @@ export default function LeadsTable({
     });
   };
 
-  const getInitials = (firstName: string, lastName: string) => {
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-  };
-
   const isAllSelected = leads.length > 0 && selected.length === leads.length;
   const isIndeterminate = selected.length > 0 && selected.length < leads.length;
 
+  // Mobile Card Component
+  const MobileLeadCard = ({ lead }: { lead: Lead }) => {
+    const isSelected = selected.includes(lead.id);
+
+    return (
+      <Card
+        variant="outlined"
+        sx={{
+          mb: 2,
+          cursor: 'pointer',
+          border: isSelected ? '2px solid #1976d2' : '1px solid #e0e0e0',
+          width: '100%',
+          maxWidth: '100%',
+          boxSizing: 'border-box',
+          overflow: 'hidden',
+          '&:hover': {
+            boxShadow: 2,
+            borderColor: '#1976d2'
+          }
+        }}
+        onClick={() => onLeadClick(lead)}
+      >
+        <CardContent sx={{ p: 2, width: '100%', boxSizing: 'border-box' }}>
+          {/* Header with checkbox and menu */}
+          <Box sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            mb: 2,
+            width: '100%',
+            minWidth: 0
+          }}>
+            <Box sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              minWidth: 0,
+              flex: 1,
+              overflow: 'hidden'
+            }}>
+              <Checkbox
+                checked={isSelected}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  onSelect(lead.id, e.target.checked);
+                }}
+                size="small"
+                sx={{ flexShrink: 0 }}
+              />
+              <Avatar sx={{
+                bgcolor: getAvatarColor(lead.firstName),
+                width: 36,
+                height: 36,
+                flexShrink: 0,
+                fontSize: '0.875rem'
+              }}>
+                {getInitials(lead.firstName, lead.lastName)}
+              </Avatar>
+              <Box sx={{ minWidth: 0, flex: 1 }}>
+                <Typography variant="subtitle2" fontWeight={600} sx={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}>
+                  {lead.firstName} {lead.lastName}
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}>
+                  {formatDate(lead.createdAt)}
+                </Typography>
+              </Box>
+            </Box>
+            <IconButton
+              size="small"
+              onClick={(e) => handleMenuClick(e, lead.id)}
+              sx={{ flexShrink: 0 }}
+            >
+              <MoreVertIcon />
+            </IconButton>
+          </Box>
+
+          {/* Contact Info */}
+          <Stack spacing={1} sx={{ mb: 2, width: '100%' }}>
+            <Box sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              minWidth: 0,
+              width: '100%'
+            }}>
+              <EmailIcon sx={{ fontSize: 16, color: '#666', flexShrink: 0 }} />
+              <Typography variant="body2" sx={{
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                minWidth: 0
+              }}>
+                {lead.email}
+              </Typography>
+            </Box>
+            <Box sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              minWidth: 0,
+              width: '100%'
+            }}>
+              <PhoneIcon sx={{ fontSize: 16, color: '#666', flexShrink: 0 }} />
+              <Typography variant="body2" sx={{
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                minWidth: 0
+              }}>
+                {lead.phone}
+              </Typography>
+            </Box>
+            {lead.city && (
+              <Box sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                minWidth: 0,
+                width: '100%'
+              }}>
+                <LocationIcon sx={{ fontSize: 16, color: '#666', flexShrink: 0 }} />
+                <Typography variant="body2" sx={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  minWidth: 0
+                }}>
+                  {lead.city}
+                </Typography>
+              </Box>
+            )}
+          </Stack>
+
+          <Divider sx={{ my: 2 }} />
+
+          {/* Status and Labels */}
+          <Box sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            mb: 2,
+            gap: 1,
+            width: '100%',
+            minWidth: 0
+          }}>
+            <Chip
+              label={lead.status}
+              size="small"
+              sx={{
+                backgroundColor: statusColors[lead.status] || '#2196f3',
+                color: 'white',
+                fontWeight: 500,
+                maxWidth: '45%',
+                '& .MuiChip-label': {
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }
+              }}
+            />
+            <Chip
+              label={lead.label}
+              size="small"
+              color={labelColors[lead.label] as any || 'default'}
+              variant="outlined"
+              sx={{
+                maxWidth: '45%',
+                '& .MuiChip-label': {
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }
+              }}
+            />
+          </Box>
+
+          {/* Credit Amount */}
+          <Box sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            mb: 2,
+            width: '100%',
+            minWidth: 0
+          }}>
+            <EuroIcon sx={{ fontSize: 18, color: '#4caf50', flexShrink: 0 }} />
+            <Typography variant="h6" fontWeight={600} color="#4caf50" sx={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              minWidth: 0
+            }}>
+              {formatCurrency(lead.creditAmount)}
+            </Typography>
+          </Box>
+
+          {/* Professional Info */}
+          <Box sx={{ width: '100%', minWidth: 0 }}>
+            <Typography variant="caption" color="text.secondary" display="block" sx={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}>
+              {translateField('professionalGroup', lead.professionalGroup)}
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}>
+              {translateField('familyStatus', lead.familyStatus)} • {translateField('livingSituation', lead.livingSituation)}
+            </Typography>
+          </Box>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  // Mobile view with cards
+  if (isMobile) {
+    return (
+      <Box sx={{
+        width: '100%',
+        maxWidth: '100vw',
+        overflow: 'hidden',
+        p: 1
+      }}>
+        {leads.length === 0 ? (
+          <Paper sx={{
+            p: 3,
+            textAlign: 'center',
+            border: '1px solid #e0e0e0',
+            width: '100%',
+            boxSizing: 'border-box'
+          }}>
+            <Typography variant="body1" color="text.secondary">
+              Keine Leads gefunden
+            </Typography>
+          </Paper>
+        ) : (
+          <>
+            {/* Mobile Select All */}
+            <Box sx={{
+              mb: 2,
+              p: 2,
+              bgcolor: '#fafafa',
+              borderRadius: 1,
+              width: '100%',
+              boxSizing: 'border-box'
+            }}>
+              <Box sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                width: '100%'
+              }}>
+                <Box sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  minWidth: 0,
+                  flex: 1
+                }}>
+                  <Checkbox
+                    indeterminate={isIndeterminate}
+                    checked={isAllSelected}
+                    onChange={(e) => onSelectAll(e.target.checked)}
+                    size="small"
+                  />
+                  <Typography variant="body2" sx={{
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {selected.length > 0 ? `${selected.length} ausgewählt` : 'Alle auswählen'}
+                  </Typography>
+                </Box>
+                <Typography variant="caption" color="text.secondary" sx={{ flexShrink: 0 }}>
+                  {leads.length} Leads
+                </Typography>
+              </Box>
+            </Box>
+
+            {/* Mobile Cards */}
+            {leads.map((lead) => (
+              <MobileLeadCard key={lead.id} lead={lead} />
+            ))}
+          </>
+        )}
+
+        {/* Menu for mobile cards */}
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleMenuClose}
+          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        >
+          <MenuItem onClick={() => {
+            if (selectedLeadId) onStatusChange(selectedLeadId, 'New');
+            handleMenuClose();
+          }}>
+            Status: Neu
+          </MenuItem>
+          <MenuItem onClick={() => {
+            if (selectedLeadId) onStatusChange(selectedLeadId, 'Qualified');
+            handleMenuClose();
+          }}>
+            Status: Qualifiziert
+          </MenuItem>
+          <MenuItem onClick={() => {
+            if (selectedLeadId) onStatusChange(selectedLeadId, 'Follow-Up');
+            handleMenuClose();
+          }}>
+            Status: Follow-Up
+          </MenuItem>
+          <MenuItem onClick={() => {
+            if (selectedLeadId) onLabelChange(selectedLeadId, 'Warm');
+            handleMenuClose();
+          }}>
+            Label: Warm
+          </MenuItem>
+          <MenuItem onClick={() => {
+            if (selectedLeadId) onLabelChange(selectedLeadId, 'Kalt');
+            handleMenuClose();
+          }}>
+            Label: Kalt
+          </MenuItem>
+        </Menu>
+      </Box>
+    );
+  }
+
+  // Desktop view with table
   return (
     <TableContainer
       component={Paper}
       sx={{
         boxShadow: 'none',
         border: '1px solid #e0e0e0',
-        overflowX: 'auto',
-        '& .MuiTable-root': {
-          minWidth: isMobile ? 800 : 'auto'
-        }
+        overflowX: 'auto'
       }}
     >
       <Table stickyHeader>
@@ -248,17 +595,15 @@ export default function LeadsTable({
                 Status
               </TableSortLabel>
             </TableCell>
-            {!isMobile && (
-              <TableCell>
-                <TableSortLabel
-                  active={sortField === 'label'}
-                  direction={sortField === 'label' ? sortDirection : 'asc'}
-                  onClick={() => onSort('label')}
-                >
-                  Label
-                </TableSortLabel>
-              </TableCell>
-            )}
+            <TableCell>
+              <TableSortLabel
+                active={sortField === 'label'}
+                direction={sortField === 'label' ? sortDirection : 'asc'}
+                onClick={() => onSort('label')}
+              >
+                Label
+              </TableSortLabel>
+            </TableCell>
             <TableCell>
               <TableSortLabel
                 active={sortField === 'creditAmount'}
@@ -268,20 +613,16 @@ export default function LeadsTable({
                 Kreditbetrag
               </TableSortLabel>
             </TableCell>
-            {!isMobile && (
-              <TableCell>Beruf & Wohnsituation</TableCell>
-            )}
-            {!isTablet && (
-              <TableCell>
-                <TableSortLabel
-                  active={sortField === 'createdAt'}
-                  direction={sortField === 'createdAt' ? sortDirection : 'asc'}
-                  onClick={() => onSort('createdAt')}
-                >
-                  Erstellt
-                </TableSortLabel>
-              </TableCell>
-            )}
+            <TableCell>Beruf & Wohnsituation</TableCell>
+            <TableCell>
+              <TableSortLabel
+                active={sortField === 'createdAt'}
+                direction={sortField === 'createdAt' ? sortDirection : 'asc'}
+                onClick={() => onSort('createdAt')}
+              >
+                Erstellt
+              </TableSortLabel>
+            </TableCell>
             <TableCell width={50}></TableCell>
           </TableRow>
         </TableHead>
@@ -373,16 +714,14 @@ export default function LeadsTable({
                 />
               </TableCell>
 
-              {!isMobile && (
-                <TableCell>
-                  <Chip
-                    label={lead.label}
-                    size="small"
-                    color={labelColors[lead.label] as any || 'default'}
-                    variant="outlined"
-                  />
-                </TableCell>
-              )}
+              <TableCell>
+                <Chip
+                  label={lead.label}
+                  size="small"
+                  color={labelColors[lead.label] as any || 'default'}
+                  variant="outlined"
+                />
+              </TableCell>
 
               <TableCell>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -391,49 +730,35 @@ export default function LeadsTable({
                     {formatCurrency(lead.creditAmount)}
                   </Typography>
                 </Box>
-                {lead.income && !isMobile && (
+                {lead.income && (
                   <Typography variant="caption" color="text.secondary">
                     Einkommen: {formatCurrency(lead.income)}
                   </Typography>
                 )}
-                {/* Show label on mobile in credit amount column */}
-                {isMobile && (
-                  <Chip
-                    label={lead.label}
-                    size="small"
-                    color={labelColors[lead.label] as any || 'default'}
-                    variant="outlined"
-                    sx={{ mt: 0.5 }}
-                  />
-                )}
               </TableCell>
 
-              {!isMobile && (
-                <TableCell>
-                  <Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                      <PersonIcon sx={{ fontSize: 14, color: '#666' }} />
-                      <Typography variant="caption">
-                        {translateField('professionalGroup', lead.professionalGroup)}
-                      </Typography>
-                    </Box>
-                    <Typography variant="caption" color="text.secondary">
-                      {translateField('familyStatus', lead.familyStatus)} • {translateField('livingSituation', lead.livingSituation)}
+              <TableCell>
+                <Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                    <PersonIcon sx={{ fontSize: 14, color: '#666' }} />
+                    <Typography variant="caption">
+                      {translateField('professionalGroup', lead.professionalGroup)}
                     </Typography>
                   </Box>
-                </TableCell>
-              )}
+                  <Typography variant="caption" color="text.secondary">
+                    {translateField('familyStatus', lead.familyStatus)} • {translateField('livingSituation', lead.livingSituation)}
+                  </Typography>
+                </Box>
+              </TableCell>
 
-              {!isTablet && (
-                <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <CalendarIcon sx={{ fontSize: 14, color: '#666' }} />
-                    <Typography variant="caption" color="text.secondary">
-                      {formatDate(lead.createdAt)}
-                    </Typography>
-                  </Box>
-                </TableCell>
-              )}
+              <TableCell>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CalendarIcon sx={{ fontSize: 14, color: '#666' }} />
+                  <Typography variant="caption" color="text.secondary">
+                    {formatDate(lead.createdAt)}
+                  </Typography>
+                </Box>
+              </TableCell>
 
               <TableCell>
                 <Tooltip title="Aktionen">
