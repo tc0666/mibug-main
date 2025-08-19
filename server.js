@@ -439,14 +439,33 @@ app.get('/admin/*', (req, res) => {
 });
 
 // Serve static files from the React app
-app.use(express.static(path.join(__dirname, 'build')));
+const buildPath = path.join(__dirname, 'build');
+app.use(express.static(buildPath));
 
 // Handle all requests by serving the React index.html file
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+  const indexPath = path.join(buildPath, 'index.html');
+
+  // Check if the file exists
+  if (require('fs').existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).json({
+      error: 'Build files not found',
+      buildPath: buildPath,
+      indexPath: indexPath,
+      exists: require('fs').existsSync(buildPath)
+    });
+  }
 });
 
 const port = process.env.PORT || 5000;
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+
+// For Vercel, we need to export the app instead of listening
+if (process.env.VERCEL) {
+  module.exports = app;
+} else {
+  app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
+}
