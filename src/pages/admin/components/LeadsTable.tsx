@@ -28,6 +28,65 @@ import {
   Person as PersonIcon
 } from '@mui/icons-material';
 
+// Translation maps for German display
+const familyStatusMap: Record<string, string> = {
+  SINGLE: 'ledig',
+  MARRIED: 'verheiratet',
+  WIDOWED: 'verwitwet',
+  DIVORCED: 'geschieden',
+  PARTNERSHIP: 'eheähnliche Lebensgemeinschaft',
+};
+
+const livingSituationMap: Record<string, string> = {
+  RENT: 'zur Miete',
+  OWN: 'im Wohneigentum',
+  RENTING: 'zur Miete',
+  RENTFREE: 'mietfrei',
+  PARENTS: 'bei den Eltern',
+  PROPERTY: 'im Wohneigentum',
+};
+
+const professionalGroupMap: Record<string, string> = {
+  EMPLOYEE: 'Angestellte/r',
+  EMPLOYEE_REDUCED_HOURS: 'Angestellte/r in Kurzarbeit',
+  WORKER: 'Arbeiter/in',
+  EMPLOYEE_PUBLIC_SERVICE: 'Angestellte/r im öffent. Dienst',
+  CRAFTSMAN: 'Facharbeiter/in',
+  MANAGER: 'Leitende/r Angestellte/r',
+  RETIREE: 'Rentner/in',
+  PENSIONER: 'Pensionär/in',
+  EMPLOYEE_IN_PARENTAL_LEAVE: 'Angestellte/r in Elternzeit',
+  EMPLOYEE_TEMPORARY_WORK: 'Angestellte/r über Zeitarbeitsfirma',
+  EMPLOYEE_ABROAD: 'Angestellte/r im Ausland',
+  EMPLOYEE_DOCTOR: 'Angestelltes ärztliches Fachpersonal',
+  EMPLOYEE_MINIJOB: 'Angestellte/r (Minijob 450 EUR Basis)',
+  EMPLOYEE_SICK: 'Angestellte/r (im Krankenstand / Krankengeldbezug)',
+  WORKER_PUBLIC_SERVICE: 'Arbeiter/in im öffent. Dienst',
+  WORKER_PARENTAL_LEAVE: 'Arbeiter/in in Elternzeit',
+  UNEMPLOYED: 'Arbeitslose, Sozialhilfeempfänger, ohne Beschäftigung',
+  APPRENTICE: 'Auszubildende/r',
+  OFFICER_LOWER_SERVICE: 'Beamte/r im einfachen Dienst',
+  OFFICER_UPPER_SERVICE: 'Beamte/r im gehobenen Dienst',
+  OFFICER_HIGHER_SERVICE: 'Beamte/r im höheren Dienst',
+  OFFICER_MIDDLE_SERVICE: 'Beamte/r im mittleren Dienst',
+  HOUSEWIFE: 'Hausfrau/-mann',
+  SELF_EMPLOYED: 'Selbstständige/r',
+  FREELANCER: 'Freiberufler/in',
+  STUDENT: 'Student/in',
+};
+
+// Translation function
+const translateField = (key: string, value: any): string => {
+  if (value == null || value === '') return '-';
+  const v = String(value);
+  switch (key) {
+    case 'familyStatus': return familyStatusMap[v] || v;
+    case 'professionalGroup': return professionalGroupMap[v] || v;
+    case 'livingSituation': return livingSituationMap[v] || v;
+    default: return v;
+  }
+};
+
 interface Lead {
   id: string;
   firstName: string;
@@ -320,11 +379,11 @@ export default function LeadsTable({
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
                     <PersonIcon sx={{ fontSize: 14, color: '#666' }} />
                     <Typography variant="caption">
-                      {lead.professionalGroup}
+                      {translateField('professionalGroup', lead.professionalGroup)}
                     </Typography>
                   </Box>
                   <Typography variant="caption" color="text.secondary">
-                    {lead.familyStatus} • {lead.livingSituation}
+                    {translateField('familyStatus', lead.familyStatus)} • {translateField('livingSituation', lead.livingSituation)}
                   </Typography>
                 </Box>
               </TableCell>

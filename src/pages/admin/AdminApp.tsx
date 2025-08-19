@@ -57,6 +57,7 @@ const familyStatusMap: Record<string, string> = {
   MARRIED: 'verheiratet',
   WIDOWED: 'verwitwet',
   DIVORCED: 'geschieden',
+  PARTNERSHIP: 'eheähnliche Lebensgemeinschaft',
 };
 
 const livingSituationMap: Record<string, string> = {
