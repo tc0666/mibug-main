@@ -152,28 +152,46 @@ export default function AdminApp() {
   const [activeSection, setActiveSection] = useState('leads-all');
   const [showNewLeadModal, setShowNewLeadModal] = useState(false);
 
-  // Notification management
-  const [notifications, setNotifications] = useState({
-    activities: 5,
-    analytics: 0,
-    finance: 0,
-    settings: 0
+  // Track read leads with localStorage persistence
+  const [readLeads, setReadLeads] = useState(() => {
+    try {
+      const saved = localStorage.getItem('admin-read-leads');
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch {
+      return new Set();
+    }
   });
 
-  // Calculate dynamic lead counts
+  // Calculate dynamic lead counts (only unread leads count as notifications)
   const leadCounts = useMemo(() => {
     const total = leads.length;
-    const newLeads = leads.filter(lead => lead.status === 'New').length;
-    const qualified = leads.filter(lead => lead.status === 'Qualified').length;
-    const followUp = leads.filter(lead => lead.status === 'Follow-Up').length;
+    const unreadNewLeads = leads.filter(lead => lead.status === 'New' && !readLeads.has(lead.id)).length;
+    const unreadQualified = leads.filter(lead => lead.status === 'Qualified' && !readLeads.has(lead.id)).length;
+    const unreadFollowUp = leads.filter(lead => lead.status === 'Follow-Up' && !readLeads.has(lead.id)).length;
 
     return {
       total,
-      new: newLeads,
-      qualified,
-      followUp
+      new: unreadNewLeads,
+      qualified: unreadQualified,
+      followUp: unreadFollowUp
     };
-  }, [leads]);
+  }, [leads, readLeads]);
+
+  // Function to mark a lead as read
+  const markLeadAsRead = (leadId: string) => {
+    const newReadLeads = new Set(readLeads);
+    newReadLeads.add(leadId);
+    setReadLeads(newReadLeads);
+    localStorage.setItem('admin-read-leads', JSON.stringify([...newReadLeads]));
+  };
+
+  // Function to mark all leads as read
+  const markAllLeadsAsRead = () => {
+    const allLeadIds = leads.map(lead => lead.id);
+    const newReadLeads = new Set(allLeadIds);
+    setReadLeads(newReadLeads);
+    localStorage.setItem('admin-read-leads', JSON.stringify([...newReadLeads]));
+  };
 
   const checkSession = async () => {
     const storedSession = localStorage.getItem('admin-session');
@@ -416,30 +434,7 @@ export default function AdminApp() {
     }
   };
 
-  // Notification management functions
-  const clearNotifications = (section?: string) => {
-    if (section) {
-      setNotifications(prev => ({ ...prev, [section]: 0 }));
-    } else {
-      // Clear all notifications
-      setNotifications({
-        activities: 0,
-        analytics: 0,
-        finance: 0,
-        settings: 0
-      });
-    }
-  };
 
-  const clearAllNotifications = () => clearNotifications();
-
-  // Function to add notifications (for testing/demo purposes)
-  const addNotification = (section: 'activities' | 'analytics' | 'finance' | 'settings', count: number = 1) => {
-    setNotifications(prev => ({
-      ...prev,
-      [section]: prev[section] + count
-    }));
-  };
 
   const handleLogin = (newSessionId: string) => {
     setSessionId(newSessionId);
@@ -528,7 +523,10 @@ export default function AdminApp() {
               onSort={handleSort}
               sortField={sortField}
               sortDirection={sortDirection}
-              onLeadClick={setDetailsLead}
+              onLeadClick={(lead) => {
+                setDetailsLead(lead);
+                markLeadAsRead(lead.id);
+              }}
               onStatusChange={handleStatusChange}
               onLabelChange={handleLabelChange}
             />
@@ -573,9 +571,7 @@ export default function AdminApp() {
         activeSection={activeSection}
         onSectionChange={setActiveSection}
         leadCounts={leadCounts}
-        notifications={notifications}
-        onClearNotifications={clearNotifications}
-        onClearAllNotifications={clearAllNotifications}
+        onMarkAllLeadsAsRead={markAllLeadsAsRead}
       />
 
       {/* Main Content Area */}

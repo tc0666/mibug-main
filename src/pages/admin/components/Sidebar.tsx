@@ -52,14 +52,7 @@ interface SidebarProps {
     qualified: number;
     followUp: number;
   };
-  notifications?: {
-    activities: number;
-    analytics: number;
-    finance: number;
-    settings: number;
-  };
-  onClearNotifications?: (section?: string) => void;
-  onClearAllNotifications?: () => void;
+  onMarkAllLeadsAsRead?: () => void;
 }
 
 const menuItems = [
@@ -120,14 +113,12 @@ export default function Sidebar({
   activeSection,
   onSectionChange,
   leadCounts,
-  notifications,
-  onClearNotifications,
-  onClearAllNotifications
+  onMarkAllLeadsAsRead
 }: SidebarProps) {
   const [expandedItems, setExpandedItems] = useState<string[]>(['leads']);
   const [notificationMenuAnchor, setNotificationMenuAnchor] = useState<null | HTMLElement>(null);
 
-  // Dynamic menu items with real lead counts
+  // Dynamic menu items with notifications only on main Leads section
   const dynamicMenuItems = [
     {
       id: 'dashboard',
@@ -139,19 +130,19 @@ export default function Sidebar({
       id: 'leads',
       label: 'Leads',
       icon: PeopleIcon,
-      badge: leadCounts?.total || 0,
+      badge: (leadCounts?.new || 0) + (leadCounts?.qualified || 0) + (leadCounts?.followUp || 0), // Total unread notifications
       subItems: [
         { id: 'leads-all', label: 'Alle Leads', icon: GroupIcon },
-        { id: 'leads-new', label: 'Neue Leads', icon: PersonAddIcon, badge: leadCounts?.new || 0 },
-        { id: 'leads-qualified', label: 'Qualifiziert', icon: StarIcon, badge: leadCounts?.qualified || 0 },
-        { id: 'leads-follow-up', label: 'Follow-Up', icon: ScheduleIcon, badge: leadCounts?.followUp || 0 }
+        { id: 'leads-new', label: 'Neue Leads', icon: PersonAddIcon },
+        { id: 'leads-qualified', label: 'Qualifiziert', icon: StarIcon },
+        { id: 'leads-follow-up', label: 'Follow-Up', icon: ScheduleIcon }
       ]
     },
     {
       id: 'activities',
       label: 'Aktivitäten',
       icon: AssignmentIcon,
-      badge: notifications?.activities || 0,
+      badge: null, // No notifications on Activities
       subItems: [
         { id: 'activities-calls', label: 'Anrufe', icon: PhoneIcon },
         { id: 'activities-emails', label: 'E-Mails', icon: EmailIcon },
@@ -162,7 +153,7 @@ export default function Sidebar({
       id: 'analytics',
       label: 'Analytics',
       icon: AnalyticsIcon,
-      badge: notifications?.analytics || 0,
+      badge: null, // No notifications on Analytics
       subItems: [
         { id: 'analytics-overview', label: 'Übersicht', icon: TrendingUpIcon },
         { id: 'analytics-reports', label: 'Berichte', icon: AssessmentIcon },
@@ -173,7 +164,7 @@ export default function Sidebar({
       id: 'finance',
       label: 'Finanzen',
       icon: AccountBalanceIcon,
-      badge: notifications?.finance || 0,
+      badge: null, // No notifications on Finance
       subItems: [
         { id: 'finance-credits', label: 'Kredite', icon: CreditCardIcon },
         { id: 'finance-payments', label: 'Zahlungen', icon: ReceiptIcon },
@@ -191,10 +182,6 @@ export default function Sidebar({
       );
     } else {
       onSectionChange(itemId);
-      // Clear notifications for the section when visited
-      if (onClearNotifications && notifications && notifications[itemId as keyof typeof notifications] > 0) {
-        onClearNotifications(itemId);
-      }
     }
   };
 
@@ -206,27 +193,20 @@ export default function Sidebar({
     setNotificationMenuAnchor(null);
   };
 
-  const handleClearSpecificNotification = (section: string) => {
-    if (onClearNotifications) {
-      onClearNotifications(section);
+  const handleMarkAllAsRead = () => {
+    if (onMarkAllLeadsAsRead) {
+      onMarkAllLeadsAsRead();
     }
     handleNotificationMenuClose();
   };
 
-  const handleClearAllNotifications = () => {
-    if (onClearAllNotifications) {
-      onClearAllNotifications();
-    }
-    handleNotificationMenuClose();
-  };
-
-  // Dynamic bottom menu items
+  // Dynamic bottom menu items (no notifications)
   const dynamicBottomMenuItems = [
     {
       id: 'settings',
       label: 'Einstellungen',
       icon: SettingsIcon,
-      badge: notifications?.settings || 0,
+      badge: null, // No notifications on Settings
       subItems: [
         { id: 'settings-general', label: 'Allgemein', icon: SettingsIcon },
         { id: 'settings-security', label: 'Sicherheit', icon: SecurityIcon },
@@ -240,10 +220,8 @@ export default function Sidebar({
     }
   ];
 
-  // Calculate total notifications
-  const totalNotifications = notifications ?
-    Object.values(notifications).reduce((sum, count) => sum + count, 0) +
-    (leadCounts?.new || 0) + (leadCounts?.qualified || 0) + (leadCounts?.followUp || 0) : 0;
+  // Calculate total lead notifications (only for leads)
+  const totalNotifications = (leadCounts?.new || 0) + (leadCounts?.qualified || 0) + (leadCounts?.followUp || 0);
 
   const renderMenuItem = (item: any, isSubItem: boolean = false) => {
     const isActive = activeSection === item.id;
@@ -334,7 +312,7 @@ export default function Sidebar({
           />
 
           {totalNotifications > 0 && (
-            <Tooltip title="Benachrichtigungen verwalten">
+            <Tooltip title="Alle Leads als gelesen markieren">
               <IconButton
                 size="small"
                 onClick={handleNotificationMenuOpen}
@@ -357,45 +335,12 @@ export default function Sidebar({
             sx: { minWidth: 200 }
           }}
         >
-          <MenuItem onClick={handleClearAllNotifications} disabled={totalNotifications === 0}>
+          <MenuItem onClick={handleMarkAllAsRead} disabled={totalNotifications === 0}>
             <ListItemIcon>
               <ClearAllIcon fontSize="small" />
             </ListItemIcon>
-            <ListItemText primary="Alle löschen" />
+            <ListItemText primary="Alle Leads als gelesen markieren" />
           </MenuItem>
-          <Divider />
-          {notifications?.activities > 0 && (
-            <MenuItem onClick={() => handleClearSpecificNotification('activities')}>
-              <ListItemIcon>
-                <ClearIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText primary={`Aktivitäten (${notifications?.activities})`} />
-            </MenuItem>
-          )}
-          {notifications?.analytics > 0 && (
-            <MenuItem onClick={() => handleClearSpecificNotification('analytics')}>
-              <ListItemIcon>
-                <ClearIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText primary={`Analytics (${notifications?.analytics})`} />
-            </MenuItem>
-          )}
-          {notifications?.finance > 0 && (
-            <MenuItem onClick={() => handleClearSpecificNotification('finance')}>
-              <ListItemIcon>
-                <ClearIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText primary={`Finanzen (${notifications?.finance})`} />
-            </MenuItem>
-          )}
-          {notifications?.settings > 0 && (
-            <MenuItem onClick={() => handleClearSpecificNotification('settings')}>
-              <ListItemIcon>
-                <ClearIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText primary={`Einstellungen (${notifications?.settings})`} />
-            </MenuItem>
-          )}
         </Menu>
       </Box>
 
