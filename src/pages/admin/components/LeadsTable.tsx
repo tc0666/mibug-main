@@ -404,7 +404,7 @@ export default function LeadsTable({
             display: 'flex',
             alignItems: 'center',
             gap: 1,
-            mb: 2,
+            mb: 1,
             width: '100%',
             minWidth: 0
           }}>
@@ -418,6 +418,28 @@ export default function LeadsTable({
               {formatCurrency(lead.creditAmount)}
             </Typography>
           </Box>
+
+          {/* Net Income */}
+          {lead.income && (
+            <Box sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              mb: 2,
+              width: '100%',
+              minWidth: 0
+            }}>
+              <EuroIcon sx={{ fontSize: 16, color: '#2196f3', flexShrink: 0 }} />
+              <Typography variant="body2" fontWeight={500} color="#2196f3" sx={{
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                minWidth: 0
+              }}>
+                Nettoeinkommen: {formatCurrency(lead.income)}
+              </Typography>
+            </Box>
+          )}
 
           {/* Professional Info */}
           <Box sx={{ width: '100%', minWidth: 0 }}>
@@ -616,6 +638,15 @@ export default function LeadsTable({
                 Kreditbetrag
               </TableSortLabel>
             </TableCell>
+            <TableCell>
+              <TableSortLabel
+                active={sortField === 'income'}
+                direction={sortField === 'income' ? sortDirection : 'asc'}
+                onClick={() => onSort('income')}
+              >
+                Nettoeinkommen
+              </TableSortLabel>
+            </TableCell>
             <TableCell>Beruf & Wohnsituation</TableCell>
             <TableCell>
               <TableSortLabel
@@ -632,7 +663,7 @@ export default function LeadsTable({
         <TableBody>
           {leads.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={9} sx={{ textAlign: 'center', py: 4 }}>
+              <TableCell colSpan={10} sx={{ textAlign: 'center', py: 4 }}>
                 <Typography variant="body1" color="text.secondary">
                   Keine Leads gefunden
                 </Typography>
@@ -747,9 +778,19 @@ export default function LeadsTable({
                     {formatCurrency(lead.creditAmount)}
                   </Typography>
                 </Box>
-                {lead.income && (
-                  <Typography variant="caption" color="text.secondary">
-                    Einkommen: {formatCurrency(lead.income)}
+              </TableCell>
+
+              <TableCell>
+                {lead.income ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <EuroIcon sx={{ fontSize: 16, color: '#2196f3' }} />
+                    <Typography variant="body2" fontWeight={600} color="#2196f3">
+                      {formatCurrency(lead.income)}
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    -
                   </Typography>
                 )}
               </TableCell>

@@ -234,7 +234,7 @@ export default function Dashboard({ leads, totalCount }: DashboardProps) {
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12}>
           <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
+            <Typography variant="h5" gutterBottom sx={{ mb: 3, fontWeight: 600 }}>
               Schnellzugriff
             </Typography>
             <Grid container spacing={3}>
@@ -340,7 +340,7 @@ export default function Dashboard({ leads, totalCount }: DashboardProps) {
         {/* Lead Status Distribution */}
         <Grid item xs={12} md={8}>
           <Paper sx={{ p: 3, height: '400px' }}>
-            <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
+            <Typography variant="h5" gutterBottom sx={{ mb: 3, fontWeight: 600 }}>
               Lead Status Verteilung
             </Typography>
 
@@ -364,13 +364,13 @@ export default function Dashboard({ leads, totalCount }: DashboardProps) {
                     boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                   }
                 }}>
-                  <Typography variant="h3" sx={{ fontWeight: 700, color: '#2196f3', mb: 0.5 }}>
+                  <Typography variant="h3" sx={{ fontWeight: 700, color: '#2196f3', mb: 0.5, fontSize: '2rem' }}>
                     {stats.newLeads}
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500, color: '#333', mb: 0.5 }}>
                     Neue Leads
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                     {stats.totalLeads > 0 ? ((stats.newLeads / stats.totalLeads) * 100).toFixed(1) : 0}%
                   </Typography>
                 </Box>
@@ -394,13 +394,13 @@ export default function Dashboard({ leads, totalCount }: DashboardProps) {
                     boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                   }
                 }}>
-                  <Typography variant="h3" sx={{ fontWeight: 700, color: '#4caf50', mb: 0.5 }}>
+                  <Typography variant="h3" sx={{ fontWeight: 700, color: '#4caf50', mb: 0.5, fontSize: '2rem' }}>
                     {stats.qualifiedLeads}
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500, color: '#333', mb: 0.5 }}>
                     Qualifiziert
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                     {stats.totalLeads > 0 ? ((stats.qualifiedLeads / stats.totalLeads) * 100).toFixed(1) : 0}%
                   </Typography>
                 </Box>
@@ -424,13 +424,13 @@ export default function Dashboard({ leads, totalCount }: DashboardProps) {
                     boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                   }
                 }}>
-                  <Typography variant="h3" sx={{ fontWeight: 700, color: '#ff9800', mb: 0.5 }}>
+                  <Typography variant="h3" sx={{ fontWeight: 700, color: '#ff9800', mb: 0.5, fontSize: '2rem' }}>
                     {stats.followUpLeads}
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500, color: '#333', mb: 0.5 }}>
                     Follow-Up
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                     {stats.totalLeads > 0 ? ((stats.followUpLeads / stats.totalLeads) * 100).toFixed(1) : 0}%
                   </Typography>
                 </Box>
@@ -454,13 +454,13 @@ export default function Dashboard({ leads, totalCount }: DashboardProps) {
                     boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                   }
                 }}>
-                  <Typography variant="h3" sx={{ fontWeight: 700, color: '#9c27b0', mb: 0.5 }}>
+                  <Typography variant="h3" sx={{ fontWeight: 700, color: '#9c27b0', mb: 0.5, fontSize: '2rem' }}>
                     {stats.conversionRate.toFixed(1)}%
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500, color: '#333', mb: 0.5 }}>
                     Conversion
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                     Erfolgsquote
                   </Typography>
                 </Box>
@@ -478,30 +478,30 @@ export default function Dashboard({ leads, totalCount }: DashboardProps) {
               <Grid container spacing={2} alignItems="center">
                 <Grid item xs={12} md={4}>
                   <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="h6" sx={{ fontWeight: 600, color: '#333' }}>
+                    <Typography variant="h5" sx={{ fontWeight: 600, color: '#333' }}>
                       {stats.totalLeads}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                       Gesamt Leads
                     </Typography>
                   </Box>
                 </Grid>
                 <Grid item xs={12} md={4}>
                   <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="h6" sx={{ fontWeight: 600, color: '#333' }}>
+                    <Typography variant="h5" sx={{ fontWeight: 600, color: '#333' }}>
                       €{stats.totalCreditAmount.toLocaleString('de-DE')}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                       Gesamtvolumen
                     </Typography>
                   </Box>
                 </Grid>
                 <Grid item xs={12} md={4}>
                   <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="h6" sx={{ fontWeight: 600, color: '#333' }}>
+                    <Typography variant="h5" sx={{ fontWeight: 600, color: '#333' }}>
                       €{stats.averageCreditAmount.toLocaleString('de-DE')}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                       Ø pro Lead
                     </Typography>
                   </Box>
@@ -514,7 +514,7 @@ export default function Dashboard({ leads, totalCount }: DashboardProps) {
         {/* Recent Applications */}
         <Grid item xs={12} md={4}>
           <Paper sx={{ p: 3, height: '400px' }}>
-            <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
+            <Typography variant="h5" gutterBottom sx={{ mb: 3, fontWeight: 600 }}>
               Neueste Anträge
             </Typography>
 
