@@ -11,6 +11,8 @@ import Dashboard from './components/Dashboard';
 
 import Analytics from './components/Analytics';
 import Finance from './components/Finance';
+import Settings from './components/Settings';
+import Help from './components/Help';
 import Sidebar from './components/Sidebar';
 
 interface LeadItem { [key: string]: any }
@@ -530,6 +532,14 @@ export default function AdminApp() {
       return <Finance leads={leads} totalCount={totalCount} activeSection={activeSection} />;
     }
 
+    if (activeSection.startsWith('settings')) {
+      return <Settings activeSection={activeSection} />;
+    }
+
+    if (activeSection === 'help') {
+      return <Help />;
+    }
+
     if (activeSection.startsWith('leads')) {
       return (
         <Box sx={{
@@ -612,15 +622,14 @@ export default function AdminApp() {
       );
     }
 
-    // Placeholder for other sections
+    // Fallback for unknown sections
     return (
       <Box sx={{ p: 4, textAlign: 'center', py: 8 }}>
         <Typography variant="h5" color="text.secondary" gutterBottom>
-          {activeSection === 'settings' && 'Einstellungen'}
-          {activeSection === 'help' && 'Hilfe & Support'}
+          Sektion nicht gefunden
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Diese Funktion wird bald verfügbar sein.
+          Die angeforderte Sektion ist nicht verfügbar.
         </Typography>
       </Box>
     );
