@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Grid,
@@ -38,6 +38,7 @@ import {
 interface FinanceProps {
   leads: any[];
   totalCount: number;
+  activeSection: string;
 }
 
 interface TabPanelProps {
@@ -62,8 +63,23 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
-export default function Finance({ leads, totalCount }: FinanceProps) {
-  const [tabValue, setTabValue] = useState(0);
+export default function Finance({ leads, totalCount, activeSection }: FinanceProps) {
+  // Map activeSection to tab index
+  const getTabIndexFromSection = (section: string) => {
+    switch (section) {
+      case 'finance-credits': return 0;
+      case 'finance-payments': return 1;
+      case 'finance-reports': return 2;
+      default: return 0;
+    }
+  };
+
+  const [tabValue, setTabValue] = useState(getTabIndexFromSection(activeSection));
+
+  // Update tab when activeSection changes
+  useEffect(() => {
+    setTabValue(getTabIndexFromSection(activeSection));
+  }, [activeSection]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -103,6 +119,38 @@ export default function Finance({ leads, totalCount }: FinanceProps) {
     }).format(amount);
   };
 
+  // Different KPI sets for each tab
+  const creditsKPIs = [
+    { metric: 'Gesamtvolumen', value: formatCurrency(financeData.totalVolume), trend: '+12%', color: 'primary', icon: MoneyIcon },
+    { metric: 'Durchschnittsbetrag', value: formatCurrency(financeData.averageAmount), trend: '+5%', color: 'success', icon: TrendingUpIcon },
+    { metric: 'Qualifizierte Kredite', value: leads.filter(lead => lead.status === 'Qualified').length.toString(), trend: '+8%', color: 'info', icon: CheckCircleIcon },
+    { metric: 'Ausstehende Kredite', value: leads.filter(lead => lead.status === 'Follow-Up').length.toString(), trend: '-2%', color: 'warning', icon: ScheduleIcon }
+  ];
+
+  const paymentsKPIs = [
+    { metric: 'Monatliche Zahlungen', value: '€2.570', trend: '+3%', color: 'success', icon: ReceiptIcon },
+    { metric: 'Pünktliche Zahlungen', value: '87%', trend: '+2%', color: 'success', icon: CheckCircleIcon },
+    { metric: 'Überfällige Zahlungen', value: '€520', trend: '-15%', color: 'error', icon: WarningIcon },
+    { metric: 'Durchschn. Zahlungsdauer', value: '2.3 Tage', trend: '-8%', color: 'info', icon: ScheduleIcon }
+  ];
+
+  const reportsKPIs = [
+    { metric: 'Zinssatz Ø', value: '3.7%', trend: '+0.2%', color: 'info', icon: AssessmentIcon },
+    { metric: 'Gewinnmarge', value: '12.5%', trend: '+1.8%', color: 'success', icon: TrendingUpIcon },
+    { metric: 'Ausfallrate', value: '2.1%', trend: '-0.5%', color: 'success', icon: CheckCircleIcon },
+    { metric: 'ROI', value: '18.3%', trend: '+3.2%', color: 'primary', icon: MoneyIcon }
+  ];
+
+  // Get current KPIs based on active tab
+  const getCurrentKPIs = () => {
+    switch (tabValue) {
+      case 0: return creditsKPIs;
+      case 1: return paymentsKPIs;
+      case 2: return reportsKPIs;
+      default: return creditsKPIs;
+    }
+  };
+
   const getStatusChip = (status: string) => {
     const statusConfig = {
       approved: { label: 'Genehmigt', color: 'success' as const },
@@ -118,7 +166,7 @@ export default function Finance({ leads, totalCount }: FinanceProps) {
   };
 
   return (
-    <Box sx={{ p: 4 }}>
+    <Box sx={{ p: 0 }}>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" sx={{ fontWeight: 600, mb: 1 }}>
           Finanzen
@@ -129,106 +177,49 @@ export default function Finance({ leads, totalCount }: FinanceProps) {
       </Box>
 
       {/* Financial Overview */}
+      {/* Dynamic KPI Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                <Avatar sx={{ bgcolor: '#2196f3', mr: 2, width: 48, height: 48 }}>
-                  <MoneyIcon />
-                </Avatar>
-                <Box>
-                  <Typography variant="h3" sx={{ fontWeight: 700, fontSize: '1.5rem' }}>
-                    {formatCurrency(financeData.totalVolume)}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
-                    Gesamtvolumen
-                  </Typography>
+        {getCurrentKPIs().map((item, index) => (
+          <Grid item xs={12} sm={6} md={3} key={index}>
+            <Card sx={{ height: '100%' }}>
+              <CardContent sx={{ p: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                  <Avatar sx={{
+                    bgcolor: item.color === 'primary' ? '#2196f3' :
+                             item.color === 'success' ? '#4caf50' :
+                             item.color === 'info' ? '#2196f3' :
+                             item.color === 'warning' ? '#ff9800' :
+                             item.color === 'error' ? '#f44336' : '#2196f3',
+                    mr: 2, width: 48, height: 48
+                  }}>
+                    <item.icon />
+                  </Avatar>
+                  <Box sx={{ flexGrow: 1 }}>
+                    <Typography variant="h3" sx={{ fontWeight: 700, fontSize: '1.75rem' }}>
+                      {item.value}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
+                      {item.metric}
+                    </Typography>
+                  </Box>
                 </Box>
-              </Box>
-              <LinearProgress
-                variant="determinate"
-                value={85}
-                sx={{ height: 8, borderRadius: 4, bgcolor: '#e3f2fd' }}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                <Avatar sx={{ bgcolor: '#4caf50', mr: 2, width: 48, height: 48 }}>
-                  <CheckCircleIcon />
-                </Avatar>
-                <Box>
-                  <Typography variant="h3" sx={{ fontWeight: 700, fontSize: '1.5rem' }}>
-                    {formatCurrency(financeData.qualifiedVolume)}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
-                    Genehmigt
-                  </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <LinearProgress
+                    variant="determinate"
+                    value={75}
+                    sx={{ flexGrow: 1, mr: 2, height: 8, borderRadius: 4 }}
+                  />
+                  <Chip
+                    label={item.trend}
+                    color={item.color as any}
+                    size="small"
+                    variant="outlined"
+                  />
                 </Box>
-              </Box>
-              <LinearProgress
-                variant="determinate"
-                value={65}
-                sx={{ height: 8, borderRadius: 4, bgcolor: '#e8f5e8' }}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                <Avatar sx={{ bgcolor: '#ff9800', mr: 2, width: 48, height: 48 }}>
-                  <ScheduleIcon />
-                </Avatar>
-                <Box>
-                  <Typography variant="h3" sx={{ fontWeight: 700, fontSize: '1.5rem' }}>
-                    {formatCurrency(financeData.pendingVolume)}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
-                    Ausstehend
-                  </Typography>
-                </Box>
-              </Box>
-              <LinearProgress
-                variant="determinate"
-                value={45}
-                sx={{ height: 8, borderRadius: 4, bgcolor: '#fff3e0' }}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                <Avatar sx={{ bgcolor: '#9c27b0', mr: 2, width: 48, height: 48 }}>
-                  <TrendingUpIcon />
-                </Avatar>
-                <Box>
-                  <Typography variant="h3" sx={{ fontWeight: 700, fontSize: '1.5rem' }}>
-                    {formatCurrency(financeData.averageAmount)}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
-                    Durchschnitt
-                  </Typography>
-                </Box>
-              </Box>
-              <LinearProgress
-                variant="determinate"
-                value={70}
-                sx={{ height: 8, borderRadius: 4, bgcolor: '#f3e5f5' }}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
       </Grid>
 
       {/* Finance Tabs */}

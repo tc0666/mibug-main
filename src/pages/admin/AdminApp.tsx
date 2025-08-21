@@ -8,7 +8,7 @@ import LeadsToolbar from './components/LeadsToolbar';
 import LeadDetailsPanel from './components/LeadDetailsPanel';
 import NewLeadModal from './components/NewLeadModal';
 import Dashboard from './components/Dashboard';
-import Activities from './components/Activities';
+
 import Analytics from './components/Analytics';
 import Finance from './components/Finance';
 import Sidebar from './components/Sidebar';
@@ -520,22 +520,19 @@ export default function AdminApp() {
       return <Dashboard leads={leads} totalCount={totalCount} />;
     }
 
-    if (activeSection.startsWith('activities')) {
-      return <Activities leads={leads} />;
-    }
+
 
     if (activeSection.startsWith('analytics')) {
-      return <Analytics leads={leads} totalCount={totalCount} />;
+      return <Analytics leads={leads} totalCount={totalCount} activeSection={activeSection} />;
     }
 
     if (activeSection.startsWith('finance')) {
-      return <Finance leads={leads} totalCount={totalCount} />;
+      return <Finance leads={leads} totalCount={totalCount} activeSection={activeSection} />;
     }
 
     if (activeSection.startsWith('leads')) {
       return (
         <Box sx={{
-          p: { xs: 1, md: 4 },
           width: '100%',
           maxWidth: '100%',
           boxSizing: 'border-box',
@@ -691,7 +688,8 @@ export default function AdminApp() {
         display: 'flex',
         flexDirection: 'column',
         marginLeft: { xs: 0, md: `${drawerWidth}px` },
-        width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` }
+        width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` },
+        minHeight: '100vh'
       }}>
         {/* Header */}
         <Paper elevation={0} sx={{ borderBottom: '1px solid #e0e0e0', zIndex: 1 }}>
@@ -731,12 +729,13 @@ export default function AdminApp() {
         <Container
           maxWidth={false}
           sx={{
-            p: { xs: 0, md: 0 },
+            p: { xs: 2, md: 4 },
             flexGrow: 1,
             overflow: 'auto',
             width: '100%',
             maxWidth: '100vw',
-            boxSizing: 'border-box'
+            boxSizing: 'border-box',
+            backgroundColor: '#f8f9fa'
           }}
         >
           {renderMainContent()}

@@ -76,17 +76,7 @@ const menuItems = [
       { id: 'leads-follow-up', label: 'Follow-Up', icon: ScheduleIcon, badge: 1 }
     ]
   },
-  {
-    id: 'activities',
-    label: 'Aktivitäten',
-    icon: AssignmentIcon,
-    badge: 5,
-    subItems: [
-      { id: 'activities-calls', label: 'Anrufe', icon: PhoneIcon },
-      { id: 'activities-emails', label: 'E-Mails', icon: EmailIcon },
-      { id: 'activities-meetings', label: 'Termine', icon: ScheduleIcon }
-    ]
-  },
+
   {
     id: 'analytics',
     label: 'Analytics',
@@ -142,17 +132,7 @@ export default function Sidebar({
         { id: 'leads-follow-up', label: 'Follow-Up', icon: ScheduleIcon }
       ]
     },
-    {
-      id: 'activities',
-      label: 'Aktivitäten',
-      icon: AssignmentIcon,
-      badge: null, // No notifications on Activities
-      subItems: [
-        { id: 'activities-calls', label: 'Anrufe', icon: PhoneIcon },
-        { id: 'activities-emails', label: 'E-Mails', icon: EmailIcon },
-        { id: 'activities-meetings', label: 'Termine', icon: ScheduleIcon }
-      ]
-    },
+
     {
       id: 'analytics',
       label: 'Analytics',
@@ -309,7 +289,7 @@ export default function Sidebar({
       {/* Header */}
       <Box sx={{ p: 3, borderBottom: '1px solid #e0e0e0', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <a href="/" style={{ display: 'inline-flex', alignItems: 'center', marginBottom: '16px' }}>
-          <img src={siteLogo} alt="MibugCredit" style={{ height: 40 }} />
+          <img src={siteLogo} alt="MibugCredit" style={{ height: 32 }} />
         </a>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
