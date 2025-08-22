@@ -15,7 +15,7 @@ import {
   Avatar
 } from '@mui/material';
 import {
-  TrendingUp as TrendingUpIcon,
+  // TrendingUp as TrendingUpIcon, // removed: no longer used in Lead Status Verteilung
   People as PeopleIcon,
   AttachMoney as MoneyIcon,
   Assignment as AssignmentIcon,
@@ -339,7 +339,7 @@ export default function Dashboard({ leads, totalCount }: DashboardProps) {
       <Grid container spacing={3}>
         {/* Lead Status Distribution */}
         <Grid item xs={12} md={8}>
-          <Paper sx={{ p: 3, height: '400px' }}>
+          <Paper sx={{ p: 3 }}>
             <Typography variant="h5" gutterBottom sx={{ mb: 3, fontWeight: 600 }}>
               Lead Status Verteilung
             </Typography>
@@ -364,6 +364,7 @@ export default function Dashboard({ leads, totalCount }: DashboardProps) {
                     boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                   }
                 }}>
+                  {/* Removed icon avatar */}
                   <Typography variant="h3" sx={{ fontWeight: 700, color: '#2196f3', mb: 0.5, fontSize: '2rem' }}>
                     {stats.newLeads}
                   </Typography>
@@ -373,6 +374,12 @@ export default function Dashboard({ leads, totalCount }: DashboardProps) {
                   <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                     {stats.totalLeads > 0 ? ((stats.newLeads / stats.totalLeads) * 100).toFixed(1) : 0}%
                   </Typography>
+                  <LinearProgress
+                    variant="determinate"
+                    value={stats.totalLeads > 0 ? (stats.newLeads / stats.totalLeads) * 100 : 0}
+                    sx={{ height: 6, borderRadius: 4, mt: 1 }}
+                    color="primary"
+                  />
                 </Box>
               </Grid>
 
@@ -394,6 +401,7 @@ export default function Dashboard({ leads, totalCount }: DashboardProps) {
                     boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                   }
                 }}>
+                  {/* Removed icon avatar */}
                   <Typography variant="h3" sx={{ fontWeight: 700, color: '#4caf50', mb: 0.5, fontSize: '2rem' }}>
                     {stats.qualifiedLeads}
                   </Typography>
@@ -403,6 +411,12 @@ export default function Dashboard({ leads, totalCount }: DashboardProps) {
                   <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                     {stats.totalLeads > 0 ? ((stats.qualifiedLeads / stats.totalLeads) * 100).toFixed(1) : 0}%
                   </Typography>
+                  <LinearProgress
+                    variant="determinate"
+                    value={stats.totalLeads > 0 ? (stats.qualifiedLeads / stats.totalLeads) * 100 : 0}
+                    sx={{ height: 6, borderRadius: 4, mt: 1 }}
+                    color="success"
+                  />
                 </Box>
               </Grid>
 
@@ -424,6 +438,7 @@ export default function Dashboard({ leads, totalCount }: DashboardProps) {
                     boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                   }
                 }}>
+                  {/* Removed icon avatar */}
                   <Typography variant="h3" sx={{ fontWeight: 700, color: '#ff9800', mb: 0.5, fontSize: '2rem' }}>
                     {stats.followUpLeads}
                   </Typography>
@@ -433,6 +448,12 @@ export default function Dashboard({ leads, totalCount }: DashboardProps) {
                   <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                     {stats.totalLeads > 0 ? ((stats.followUpLeads / stats.totalLeads) * 100).toFixed(1) : 0}%
                   </Typography>
+                  <LinearProgress
+                    variant="determinate"
+                    value={stats.totalLeads > 0 ? (stats.followUpLeads / stats.totalLeads) * 100 : 0}
+                    sx={{ height: 6, borderRadius: 4, mt: 1 }}
+                    color="warning"
+                  />
                 </Box>
               </Grid>
 
@@ -454,6 +475,7 @@ export default function Dashboard({ leads, totalCount }: DashboardProps) {
                     boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                   }
                 }}>
+                  {/* Removed icon avatar */}
                   <Typography variant="h3" sx={{ fontWeight: 700, color: '#9c27b0', mb: 0.5, fontSize: '2rem' }}>
                     {stats.conversionRate.toFixed(1)}%
                   </Typography>
@@ -463,6 +485,12 @@ export default function Dashboard({ leads, totalCount }: DashboardProps) {
                   <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                     Erfolgsquote
                   </Typography>
+                  <LinearProgress
+                    variant="determinate"
+                    value={stats.conversionRate}
+                    sx={{ height: 6, borderRadius: 4, mt: 1 }}
+                    color="secondary"
+                  />
                 </Box>
               </Grid>
             </Grid>
@@ -513,7 +541,7 @@ export default function Dashboard({ leads, totalCount }: DashboardProps) {
 
         {/* Recent Applications */}
         <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 3, height: '400px' }}>
+          <Paper sx={{ p: 3 }}>
             <Typography variant="h5" gutterBottom sx={{ mb: 3, fontWeight: 600 }}>
               Neueste Anträge
             </Typography>
